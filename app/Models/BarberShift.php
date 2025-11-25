@@ -8,13 +8,11 @@ class BarberShift extends Model
 {
     protected $fillable = [
         'barber_id',
-        'date',
+        'day_of_week',
         'start_time',
         'end_time',
         'is_day_off',
     ];
-
-    protected $dates = ['date'];
 
     public function barber()
     {

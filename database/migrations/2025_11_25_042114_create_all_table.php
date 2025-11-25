@@ -10,21 +10,6 @@ return new class extends Migration
     {
         /*
         |--------------------------------------------------------------------------
-        | USERS
-        |--------------------------------------------------------------------------
-        */
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique()->nullable();
-            $table->string('phone')->unique()->nullable();
-            $table->string('password')->nullable();
-            $table->enum('role', ['customer', 'barber', 'admin', 'owner'])->default('customer');
-            $table->timestamps();
-        });
-
-        /*
-        |--------------------------------------------------------------------------
         | BARBERS
         |--------------------------------------------------------------------------
         */
@@ -96,7 +81,16 @@ return new class extends Migration
             $table->id();
             $table->foreignId('barber_id')->constrained('barbers')->cascadeOnDelete();
 
-            $table->date('date');
+            $table->enum('day_of_week', [
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday',
+                'sunday'
+            ]);
+
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
             $table->boolean('is_day_off')->default(false);
