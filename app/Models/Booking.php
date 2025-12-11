@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'booking_code',
         'user_id',
@@ -14,31 +17,46 @@ class Booking extends Model
         'date',
         'time',
         'status',
+        'service_price',
+        'barber_price',
+        'total_price',
         'payment_method',
         'payment_status',
-        'total_price',
         'payment_proof',
     ];
 
-    protected $dates = ['date'];
+    protected $casts = [
+        'date' => 'date',
+        'time' => 'datetime:H:i',
+    ];
 
-    public function customer()
+    // Relasi: Booking milik user
+    public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 
+    // Relasi: Booking milik barber
     public function barber()
     {
         return $this->belongsTo(Barber::class);
     }
 
+    // Relasi: Service yang dipakai
     public function service()
     {
         return $this->belongsTo(Service::class);
     }
 
+    // Review untuk booking ini
     public function review()
     {
         return $this->hasOne(Review::class);
+    }
+
+    // Helper: hitung total dinamis (kalau mau)
+    public function getCalculatedTotalAttribute()
+    {
+        return $this->service_price + $this->barber_price;
     }
 }
