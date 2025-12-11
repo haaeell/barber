@@ -9,6 +9,7 @@ use App\Models\BarberShift;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
@@ -25,14 +26,13 @@ class BookingController extends Controller
         $request->validate([
             'barber_id' => 'required',
             'service_id' => 'required',
-            'date' => 'required|date'
+            'date'      => 'required|date'
         ]);
 
         $barberId = $request->barber_id;
-        $service = Service::findOrFail($request->service_id);
+        $service  = Service::findOrFail($request->service_id);
         $duration = $service->duration;
 
-        // Ambil shift barber di hari tersebut
         $day = strtolower(Carbon::parse($request->date)->format('l'));
 
         $shift = BarberShift::where('barber_id', $barberId)
@@ -41,41 +41,56 @@ class BookingController extends Controller
 
         if (!$shift || $shift->is_day_off) {
             return response()->json([
-                'slots' => [],
-                'message' => 'Barber libur hari ini'
+                'allSlots'  => [],
+                'booked'    => [],
+                'available' => [],
+                'message'   => 'Barber libur hari ini'
             ]);
         }
 
         $start = Carbon::parse($shift->start_time);
         $end   = Carbon::parse($shift->end_time);
 
-        // Generate semua slot
+        // ===============================
+        //  GENERATE ALL POSSIBLE SLOTS
+        // ===============================
         $allSlots = [];
-        $current = $start->copy();
+        $current  = $start->copy();
 
         while ($current->lt($end)) {
             $slotEnd = $current->copy()->addMinutes($duration);
 
             if ($slotEnd->lte($end)) {
-                $allSlots[] = $current->format('H:i');
+                $allSlots[] = $current->format("H:i");
             }
 
             $current->addMinutes($duration);
         }
 
-        // Ambil booking existing
-        $booked = Booking::where('barber_id', $barberId)
+        // ===============================
+        //  GET BOOKED SLOTS
+        // ===============================
+        $bookedRaw = Booking::where('barber_id', $barberId)
             ->where('date', $request->date)
             ->pluck('time')
             ->toArray();
 
-        // Filter slot yang bentrok
-        $available = array_values(array_filter($allSlots, function ($slot) use ($booked) {
-            return !in_array($slot, $booked);
-        }));
+        $booked = array_map(function ($t) {
+            return Carbon::parse($t)->format("H:i");
+        }, $bookedRaw);
 
+        // ===============================
+        //  FILTER AVAILABLE SLOTS
+        // ===============================
+        $available = array_values(array_filter($allSlots, fn($slot) => !in_array($slot, $booked)));
+
+        // ===============================
+        //  Return to frontend
+        // ===============================
         return response()->json([
-            'slots' => $available
+            'allSlots'  => $allSlots,
+            'booked'    => $booked,
+            'available' => $available,
         ]);
     }
 
@@ -91,8 +106,17 @@ class BookingController extends Controller
         $service = Service::find($request->service_id);
         $barber  = Barber::find($request->barber_id);
 
+        $exists = Booking::where('barber_id', $request->barber_id)
+            ->where('date', $request->date)
+            ->where('time', $request->time)
+            ->exists();
+
+        if ($exists) {
+            return back()->with('error', 'Slot sudah diambil orang lain, silakan pilih jam lain.');
+        }
+
         Booking::create([
-            'booking_code'  => "BOOK-" . time(),
+            'booking_code' => "BOOK-" . strtoupper(uniqid()),
             'user_id'       => auth()->id(),
             'barber_id'     => $request->barber_id,
             'service_id'    => $request->service_id,

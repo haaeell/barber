@@ -6,8 +6,8 @@
 
     <style>
         /* ---------------------------
-        WIZARD PROGRESS BAR
-    ---------------------------- */
+            WIZARD PROGRESS BAR
+        ---------------------------- */
         .wizard-container {
             display: flex;
             justify-content: space-between;
@@ -68,8 +68,8 @@
         }
 
         /* ---------------------------
-        PAGE ANIMATION SLIDE
-    ---------------------------- */
+            PAGE ANIMATION SLIDE
+        ---------------------------- */
         .step-page {
             display: none;
             animation-duration: 0.4s;
@@ -112,8 +112,8 @@
         }
 
         /* ---------------------------
-        CARD STYLE
-    ---------------------------- */
+            CARD STYLE
+        ---------------------------- */
         .barber-card,
         .service-card {
             border-radius: 12px;
@@ -381,26 +381,40 @@
                     let container = document.getElementById("slotContainer");
                     container.innerHTML = "";
 
-                    data.slots.forEach(slot => {
+                    const allSlots = data.allSlots; // kita kirim dari backend nanti
+                    const bookedSlots = data.booked; // array jam yg sudah dibooking
+
+                    allSlots.forEach(slot => {
+
                         let btn = document.createElement("button");
                         btn.type = "button";
-                        btn.className = "slot-btn btn btn-outline-success";
-                        btn.innerText = slot;
+                        btn.className = "slot-btn btn";
 
-                        btn.onclick = function() {
-                            document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove(
-                                "active"));
-                            btn.classList.add("active");
+                        // Jika slot booked
+                        if (bookedSlots.includes(slot)) {
+                            btn.classList.add("btn-secondary");
+                            btn.disabled = true;
+                            btn.innerText = slot + " (Booked)";
+                        } else {
+                            btn.classList.add("btn-outline-success");
+                            btn.innerText = slot;
 
-                            document.getElementById("formTime").value = slot;
-                            document.getElementById("summaryTime").innerText = slot;
+                            btn.onclick = function() {
+                                document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove(
+                                    "active"));
+                                btn.classList.add("active");
 
-                            goToStep(5);
-                        };
+                                document.getElementById("formTime").value = slot;
+                                document.getElementById("summaryTime").innerText = slot;
+
+                                goToStep(5);
+                            };
+                        }
 
                         container.appendChild(btn);
                     });
                 });
+
         }
     </script>
 @endsection
