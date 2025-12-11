@@ -51,9 +51,6 @@ class BookingController extends Controller
         $start = Carbon::parse($shift->start_time);
         $end   = Carbon::parse($shift->end_time);
 
-        // ===============================
-        //  GENERATE ALL POSSIBLE SLOTS
-        // ===============================
         $allSlots = [];
         $current  = $start->copy();
 
@@ -67,9 +64,6 @@ class BookingController extends Controller
             $current->addMinutes($duration);
         }
 
-        // ===============================
-        //  GET BOOKED SLOTS
-        // ===============================
         $bookedRaw = Booking::where('barber_id', $barberId)
             ->where('date', $request->date)
             ->pluck('time')
@@ -79,14 +73,8 @@ class BookingController extends Controller
             return Carbon::parse($t)->format("H:i");
         }, $bookedRaw);
 
-        // ===============================
-        //  FILTER AVAILABLE SLOTS
-        // ===============================
         $available = array_values(array_filter($allSlots, fn($slot) => !in_array($slot, $booked)));
 
-        // ===============================
-        //  Return to frontend
-        // ===============================
         return response()->json([
             'allSlots'  => $allSlots,
             'booked'    => $booked,
