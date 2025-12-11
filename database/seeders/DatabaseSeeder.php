@@ -77,9 +77,9 @@ class DatabaseSeeder extends Seeder
     private function createBarbers()
     {
         $barbers = [
-            ['Evan Barber', 'evan@barbershop.com', 'Fade Specialist'],
-            ['Rio Barber', 'rio@barbershop.com', 'Classic Cut'],
-            ['Dion Barber', 'dion@barbershop.com', 'Kids Cut'],
+            ['Evan Barber', 'evan@barbershop.com', 'Fade Specialist', 10000],
+            ['Rio Barber', 'rio@barbershop.com', 'Classic Cut', 15000],
+            ['Dion Barber', 'dion@barbershop.com', 'Kids Cut', 8000],
         ];
 
         foreach ($barbers as $index => $b) {
@@ -96,6 +96,7 @@ class DatabaseSeeder extends Seeder
                 'nickname' => explode(' ', $b[0])[0],
                 'speciality' => $b[2],
                 'is_active' => true,
+                'price' => $b[3], // Sesuai migration
             ]);
         }
     }
@@ -125,7 +126,7 @@ class DatabaseSeeder extends Seeder
     }
 
     /* -------------------------------------------------------------------------- */
-    /*  WEEKLY BARBER SHIFTS (MONDAY–SUNDAY)                                      */
+    /*  WEEKLY BARBER SHIFTS                                                      */
     /* -------------------------------------------------------------------------- */
     private function createBarberWeeklyShifts()
     {
@@ -146,7 +147,7 @@ class DatabaseSeeder extends Seeder
     }
 
     /* -------------------------------------------------------------------------- */
-    /*  DUMMY BOOKINGS                                                            */
+    /*  DUMMY BOOKINGS (Fix untuk kolom baru)                                     */
     /* -------------------------------------------------------------------------- */
     private function createDummyBookings()
     {
@@ -155,20 +156,25 @@ class DatabaseSeeder extends Seeder
         $services = Service::all();
 
         foreach ($customers as $customer) {
+
             $barber = $barbers->random();
             $service = $services->random();
 
             Booking::create([
-                'booking_code' => strtoupper(Str::random(6)),
-                'user_id' => $customer->id,
-                'barber_id' => $barber->id,
-                'service_id' => $service->id,
-                'date' => now()->addDays(rand(0, 3))->format('Y-m-d'),
-                'time' => rand(9, 17) . ':00:00',
-                'status' => 'confirmed',
+                'booking_code'   => strtoupper(Str::random(6)),
+                'user_id'        => $customer->id,
+                'barber_id'      => $barber->id,
+                'service_id'     => $service->id,
+                'date'           => now()->addDays(rand(0, 3))->format('Y-m-d'),
+                'time'           => rand(9, 17) . ':00:00',
+                'status'         => 'confirmed',
                 'payment_method' => 'cash',
                 'payment_status' => 'paid',
-                'total_price' => $service->price,
+
+                // FIX SESUAI MIGRATION
+                'service_price'  => $service->price,
+                'barber_price'   => $barber->price,
+                'total_price'    => $service->price + $barber->price,
             ]);
         }
     }
@@ -183,10 +189,10 @@ class DatabaseSeeder extends Seeder
         foreach ($bookings as $booking) {
             Review::create([
                 'booking_id' => $booking->id,
-                'user_id' => $booking->user_id,
-                'barber_id' => $booking->barber_id,
-                'rating' => rand(4, 5),
-                'comment' => 'Great service! Recommended barber.',
+                'user_id'    => $booking->user_id,
+                'barber_id'  => $booking->barber_id,
+                'rating'     => rand(4, 5),
+                'comment'    => 'Great service! Recommended barber.',
             ]);
         }
     }

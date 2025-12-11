@@ -15,6 +15,7 @@ class Barber extends Model
         'speciality',
         'is_active',
         'price',
+        'image',
     ];
 
     protected $casts = [

@@ -13,6 +13,10 @@ return new class extends Migration
         | USERS
         |--------------------------------------------------------------------------
         */
+        if (Schema::hasTable('users')) {
+            Schema::dropIfExists('users');
+        }
+
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
