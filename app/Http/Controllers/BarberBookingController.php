@@ -23,8 +23,14 @@ class BarberBookingController extends Controller
     {
         $barber = auth()->user()->barber;
 
-        $shifts = $barber->shifts()->orderBy('id')->get();
+        $shifts = $barber->shifts()
+            ->orderBy('week_number')
+            ->orderBy('day_of_week')
+            ->get()
+            ->groupBy('week_number');
 
-        return view('barber.shifts.index', compact('shifts'));
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+        return view('barber.shifts.index', compact('shifts', 'days'));
     }
 }

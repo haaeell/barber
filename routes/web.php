@@ -23,6 +23,9 @@ Auth::routes();
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::middleware(['auth'])->group(function () {
+    Route::post('/shifts/rolling', [ShiftController::class, 'rolling'])
+        ->name('shifts.rolling');
+
     Route::resource('barbers', BarberController::class);
     Route::resource('services', ServiceController::class);
     Route::resource('shifts', ShiftController::class);
@@ -37,6 +40,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/bookings/update-status', [AdminBookingController::class, 'updateStatus'])->name('admin.bookings.updateStatus');
     Route::post('/admin/bookings/complete', [AdminBookingController::class, 'complete'])
         ->name('admin.bookings.complete');
+    Route::post('/admin/bookings/walkin', [AdminBookingController::class, 'walkIn'])
+        ->name('admin.bookings.walkin');
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/barber/{id}', [ReportController::class, 'barberReport'])

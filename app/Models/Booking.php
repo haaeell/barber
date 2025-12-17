@@ -16,6 +16,8 @@ class Booking extends Model
         'service_id',
         'date',
         'time',
+        'customer_name',
+        'source',
         'status',
         'service_price',
         'barber_price',
@@ -58,5 +60,12 @@ class Booking extends Model
     public function getCalculatedTotalAttribute()
     {
         return $this->service_price + $this->barber_price;
+    }
+
+    public function getCustomerLabelAttribute()
+    {
+        return $this->source === 'walk_in'
+            ? $this->customer_name
+            : optional($this->user)->name;
     }
 }

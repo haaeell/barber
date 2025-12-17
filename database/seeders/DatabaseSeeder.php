@@ -128,23 +128,57 @@ class DatabaseSeeder extends Seeder
     /* -------------------------------------------------------------------------- */
     /*  WEEKLY BARBER SHIFTS                                                      */
     /* -------------------------------------------------------------------------- */
+    /* -------------------------------------------------------------------------- */
+    /*  BARBER SHIFTS – 4 WEEK ROLLING                                             */
+    /* -------------------------------------------------------------------------- */
     private function createBarberWeeklyShifts()
     {
-        $barbers = Barber::all();
+        $barbers = Barber::pluck('id')->values();
         $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
-        foreach ($barbers as $barber) {
-            foreach ($days as $day) {
-                BarberShift::create([
-                    'barber_id' => $barber->id,
-                    'day_of_week' => $day,
-                    'start_time' => $day === 'sunday' ? null : '09:00:00',
-                    'end_time' => $day === 'sunday' ? null : '18:00:00',
-                    'is_day_off' => $day === 'sunday',
-                ]);
+        $totalBarbers = $barbers->count();
+
+        if ($totalBarbers < 2) {
+            return;
+        }
+
+        // bersihin dulu biar aman saat re-seed
+        BarberShift::truncate();
+
+        $startTime = '09:00:00';
+        $endTime   = '18:00:00';
+
+        /**
+         * Generate 4 minggu
+         */
+        for ($week = 1; $week <= 4; $week++) {
+
+            foreach ($days as $dayIndex => $day) {
+
+                /**
+                 * 1 barber libur per hari
+                 * Rolling adil tiap minggu
+                 */
+                $offIndex = ($dayIndex + ($week - 1)) % $totalBarbers;
+                $offBarberId = $barbers[$offIndex];
+
+                foreach ($barbers as $barberId) {
+
+                    $isWorking = $barberId != $offBarberId;
+
+                    BarberShift::create([
+                        'barber_id'   => $barberId,
+                        'week_number' => $week,
+                        'day_of_week' => $day,
+                        'start_time'  => $isWorking ? $startTime : null,
+                        'end_time'    => $isWorking ? $endTime : null,
+                        'is_day_off'  => !$isWorking,
+                    ]);
+                }
             }
         }
     }
+
 
     /* -------------------------------------------------------------------------- */
     /*  DUMMY BOOKINGS (Fix untuk kolom baru)                                     */

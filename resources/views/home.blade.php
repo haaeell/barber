@@ -12,7 +12,7 @@
                     <h5 class="mb-1">Booking Selanjutnya</h5>
                     <b>{{ $upcoming->service->name }}</b><br>
                     {{ $upcoming->date }} — {{ $upcoming->time }} <br>
-                    Barber: <b>{{ $upcoming->barber->user->name }}</b>
+                    Barber: <b>{{ $upcoming->barber->user->name ?? 'Tidak ada' }}</b>
                 </div>
             @endif
 
@@ -100,7 +100,7 @@
 
                 @foreach ($recentBookings as $b)
                     <div class="border-bottom py-2">
-                        <b>{{ $b->user->name }}</b> -
+                        <b>{{ $b->user->name ?? 'Tidak ada' }}</b> -
                         {{ $b->service->name }}
                         ({{ $b->date }} {{ $b->time }})
                         —

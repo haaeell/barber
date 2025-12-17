@@ -15,6 +15,7 @@ class BarberShift extends Model
         'start_time',
         'end_time',
         'is_day_off',
+        'week_number'
     ];
 
     protected $casts = [

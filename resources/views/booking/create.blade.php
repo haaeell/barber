@@ -6,8 +6,8 @@
 
     <style>
         /* ---------------------------
-            WIZARD PROGRESS BAR
-        ---------------------------- */
+                        WIZARD PROGRESS BAR
+                    ---------------------------- */
         .wizard-container {
             display: flex;
             justify-content: space-between;
@@ -68,8 +68,8 @@
         }
 
         /* ---------------------------
-            PAGE ANIMATION SLIDE
-        ---------------------------- */
+                        PAGE ANIMATION SLIDE
+                    ---------------------------- */
         .step-page {
             display: none;
             animation-duration: 0.4s;
@@ -112,8 +112,8 @@
         }
 
         /* ---------------------------
-            CARD STYLE
-        ---------------------------- */
+                        CARD STYLE
+                    ---------------------------- */
         .barber-card,
         .service-card {
             border-radius: 12px;
@@ -201,7 +201,7 @@
                             <img src="{{ asset('storage/' . ($s->image ?? 'default-service.jpg')) }}"
                                 class="w-100 rounded mb-2" style="height:160px;object-fit:cover;">
                             <h5 class="text-center">{{ $s->name }}</h5>
-                            <p class="text-muted text-center mb-1">{{ $s->duration }} menit</p>
+                            {{-- <p class="text-muted text-center mb-1">{{ $s->duration }} menit</p> --}}
                             <p class="text-center text-muted">Rp {{ number_format($s->price) }}</p>
                             <button class="btn btn-primary btn-sm w-100 mt-1 next-from-service">
                                 Pilih Service

@@ -85,6 +85,7 @@ return new class extends Migration
 
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
+            $table->tinyInteger('week_number');
             $table->boolean('is_day_off')->default(false);
 
             $table->timestamps();
@@ -107,7 +108,7 @@ return new class extends Migration
 
             $table->string('booking_code')->unique();
 
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignId('barber_id')->nullable()->constrained('barbers')->nullOnDelete();
             $table->foreignId('service_id')->constrained('services')->cascadeOnDelete();
 

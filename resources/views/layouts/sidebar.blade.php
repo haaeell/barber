@@ -71,8 +71,8 @@
             <ul class="navbar-nav flex-fill w-100 mb-2">
 
                 <li class="nav-item">
-                    <a class="nav-link {{ Request::is('barber/bookings') ? 'text-primary fw-bold' : '' }}"
-                        href="/barber/bookings">
+                    <a class="nav-link {{ Request::is('/admin/bookings') ? 'text-primary fw-bold' : '' }}"
+                        href="/admin/bookings">
                         <i class="fe fe-calendar fe-16"></i>
                         <span class="ml-3 item-text">Jadwal Booking</span>
                     </a>

@@ -15,7 +15,14 @@ class BookingController extends Controller
 {
     public function create()
     {
-        $barbers = Barber::with('user')->get();
+        $day = strtolower(now()->format('l'));
+
+        $barbers = Barber::whereHas('shifts', function ($q) use ($day) {
+            $q->where('day_of_week', $day)
+                ->where('is_day_off', false);
+        })
+            ->with('user')
+            ->get();
         $services = Service::all();
 
         return view('booking.create', compact('barbers', 'services'));
@@ -24,27 +31,36 @@ class BookingController extends Controller
     public function getAvailableSlots(Request $request)
     {
         $request->validate([
-            'barber_id' => 'required',
-            'service_id' => 'required',
-            'date'      => 'required|date'
+            'barber_id'  => 'required|exists:barbers,id',
+            'service_id' => 'required|exists:services,id',
+            'date'       => 'required|date'
         ]);
 
         $barberId = $request->barber_id;
         $service  = Service::findOrFail($request->service_id);
-        $duration = $service->duration;
+        $duration = (int) $service->duration;
+        $date     = $request->date;
+        $day      = strtolower(Carbon::parse($date)->format('l'));
 
-        $day = strtolower(Carbon::parse($request->date)->format('l'));
+        if ($duration <= 0) {
+            return response()->json([
+                'allSlots' => [],
+                'booked' => [],
+                'available' => [],
+                'message' => 'Durasi service tidak valid'
+            ]);
+        }
 
         $shift = BarberShift::where('barber_id', $barberId)
-            ->where('day_of_week', $day)
+            ->whereRaw('LOWER(day_of_week) = ?', [$day])
             ->first();
 
         if (!$shift || $shift->is_day_off) {
             return response()->json([
-                'allSlots'  => [],
-                'booked'    => [],
+                'allSlots' => [],
+                'booked' => [],
                 'available' => [],
-                'message'   => 'Barber libur hari ini'
+                'message' => 'Barber libur'
             ]);
         }
 
@@ -54,33 +70,18 @@ class BookingController extends Controller
         $allSlots = [];
         $current  = $start->copy();
 
-        while ($current->lt($end)) {
-            $slotEnd = $current->copy()->addMinutes($duration);
-
-            if ($slotEnd->lte($end)) {
-                $allSlots[] = $current->format("H:i");
-            }
-
+        while ($current->copy()->addMinutes($duration)->lte($end)) {
+            $allSlots[] = $current->format('H:i');
             $current->addMinutes($duration);
         }
 
-        $bookedRaw = Booking::where('barber_id', $barberId)
-            ->where('date', $request->date)
-            ->pluck('time')
-            ->toArray();
-
-        $booked = array_map(function ($t) {
-            return Carbon::parse($t)->format("H:i");
-        }, $bookedRaw);
-
-        $available = array_values(array_filter($allSlots, fn($slot) => !in_array($slot, $booked)));
-
         return response()->json([
-            'allSlots'  => $allSlots,
-            'booked'    => $booked,
-            'available' => $available,
+            'allSlots' => $allSlots,
+            'booked' => [],
+            'available' => $allSlots
         ]);
     }
+
 
     public function store(Request $request)
     {
@@ -112,7 +113,7 @@ class BookingController extends Controller
             'time'          => $request->time,
             'service_price' => $service->price,
             'barber_price'  => $barber->price,
-            'total_price'   => $service->price + $barber->price,
+            'total_price'   => $service->price + $barber->price + 10000,
         ]);
 
         return back()->with('success', 'Booking berhasil dibuat!');

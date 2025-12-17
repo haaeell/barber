@@ -11,32 +11,64 @@ class AdminBookingController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->status;
-        $barber = $request->barber;
+        $user = auth()->user();
+
+        $status  = $request->status;
+        $barber  = $request->barber;
         $service = $request->service;
-        $search = $request->search;
-        $from = $request->from;
-        $to = $request->to;
+        $search  = $request->search;
+        $from    = $request->from;
+        $to      = $request->to;
 
         $bookings = Booking::with(['barber.user', 'service', 'user'])
+
+            // ================= ROLE CHECK =================
+            ->when($user->role === 'barber', function ($q) use ($user) {
+                if ($user->barber) {
+                    $q->where('barber_id', $user->barber->id);
+                } else {
+                    // safety: admin tanpa barber → kosong
+                    $q->whereRaw('1=0');
+                }
+            })
+
+            // ================= FILTER =================
             ->when($status, fn($q) => $q->where('status', $status))
-            ->when($barber, fn($q) => $q->where('barber_id', $barber))
+
+            ->when(
+                $user->role !== 'barber' && $barber,
+                fn($q) => $q->where('barber_id', $barber)
+            )
+
             ->when($service, fn($q) => $q->where('service_id', $service))
+
             ->when($search, function ($q) use ($search) {
                 $q->whereHas('user', fn($u) => $u->where('name', 'like', "%$search%"))
                     ->orWhereHas('barber.user', fn($b) => $b->where('name', 'like', "%$search%"))
                     ->orWhereHas('service', fn($s) => $s->where('name', 'like', "%$search%"));
             })
+
             ->when($from && $to, fn($q) => $q->whereBetween('date', [$from, $to]))
+
             ->orderBy('date', 'desc')
             ->orderBy('time', 'desc')
             ->get();
 
-        $barbers = Barber::with('user')->get();
+        // ================= DATA FILTER =================
+        $barbers = $user->role === 'barber'
+            ? Barber::where('id', optional($user->barber)->id)->with('user')->get()
+            : Barber::with('user')->get();
+
         $services = Service::all();
 
-        return view('admin.bookings.index', compact('bookings', 'status', 'barbers', 'services'));
+        return view('admin.bookings.index', compact(
+            'bookings',
+            'status',
+            'barbers',
+            'services'
+        ));
     }
+
 
 
     public function updateStatus(Request $request)
@@ -62,5 +94,42 @@ class AdminBookingController extends Controller
         $booking->save();
 
         return back()->with('success', 'Booking berhasil diselesaikan.');
+    }
+
+    public function walkIn(Request $request)
+    {
+        $request->validate([
+            'customer_name'  => 'required',
+            'barber_id'      => 'required|exists:barbers,id',
+            'service_id'     => 'required|exists:services,id',
+            'date'           => 'required|date',
+            'time'           => 'required',
+            'payment_method' => 'required|in:cash,qris,transfer',
+        ]);
+
+        $service = Service::findOrFail($request->service_id);
+        $barber  = Barber::findOrFail($request->barber_id);
+
+        Booking::create([
+            'booking_code'   => 'WI-' . now()->format('YmdHis'),
+            'user_id'        => null,
+            'customer_name'  => $request->customer_name,
+            'source'         => 'walk_in',
+
+            'barber_id'      => $request->barber_id,
+            'service_id'     => $request->service_id,
+            'date'           => $request->date,
+            'time'           => $request->time,
+
+            'service_price'  => $service->price,
+            'barber_price'   => $barber->price,
+            'total_price'    => $barber->price + $service->price,
+
+            'status'         => 'completed',
+            'payment_method' => $request->payment_method,
+            'payment_status' => 'paid',
+        ]);
+
+        return back()->with('success', 'Order walk-in berhasil dicatat & diselesaikan.');
     }
 }
