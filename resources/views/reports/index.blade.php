@@ -2,7 +2,6 @@
 
 @section('content')
     <div class="">
-
         <h2 class="fw-bold mb-4">Laporan Pendapatan</h2>
 
         {{-- FILTER --}}
@@ -99,7 +98,13 @@
                             <td>{{ $b->date }} {{ $b->time }}</td>
                             <td>{{ $b->user->name }}</td>
                             <td>{{ $b->barber->user->name }}</td>
-                            <td>{{ $b->service->name }}</td>
+                            <td>
+                                @foreach ($b->services as $svc)
+                                    <span class="badge badge-info">
+                                        {{ $svc->service->name }}
+                                    </span>
+                                @endforeach
+                            </td>
                             <td>{{ ucfirst($b->payment_method) }}</td>
                             <td>Rp {{ number_format($b->total_price) }}</td>
                         </tr>

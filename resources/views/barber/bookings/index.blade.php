@@ -9,7 +9,13 @@
 
                 <div class="d-flex justify-content-between">
                     <div>
-                        <h5 class="mb-1">{{ $b->service->name }}</h5>
+                        <h5 class="mb-1">
+                            @foreach ($b->services as $svc)
+                                <span class="badge badge-info">
+                                    {{ $svc->service->name }}
+                                </span>
+                            @endforeach
+                        </h5>
                         <p class="text-muted mb-1">Customer: <b>{{ $b->user->name }}</b></p>
                         <p class="mb-1">Tanggal: <b>{{ $b->date }}</b></p>
                         <p class="mb-1">Jam: <b>{{ $b->time }}</b></p>

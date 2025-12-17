@@ -2,7 +2,6 @@
 
 @section('content')
     <div class="container mt-4">
-
         <h3 class="fw-bold mb-4">
             Laporan Barber: {{ $barber->user->name }}
         </h3>
@@ -93,7 +92,13 @@
                         <tr>
                             <td>{{ $b->date }} {{ $b->time }}</td>
                             <td>{{ $b->user->name }}</td>
-                            <td>{{ $b->service->name }}</td>
+                            <td>
+                                @foreach ($b->services as $svc)
+                                    <span class="badge badge-info">
+                                        {{ $svc->service->name }}
+                                    </span>
+                                @endforeach
+                            </td>
                             <td>Rp {{ number_format($b->total_price) }}</td>
                             <td>{{ ucfirst($b->payment_method) }}</td>
                         </tr>
