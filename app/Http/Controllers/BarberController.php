@@ -5,29 +5,47 @@ namespace App\Http\Controllers;
 use App\Models\Barber;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class BarberController extends Controller
 {
     public function index()
     {
-        $barbers = Barber::with('user')->orderBy('id', 'DESC')->get();
-        $users = User::where('role', 'barber')->get(); // FIX: ambil user barber
-
-        return view('barbers.index', compact('barbers', 'users'));
+        $barbers = Barber::with('user')->latest()->get();
+        return view('barbers.index', compact('barbers'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'nickname' => 'nullable|string',
+            'name'       => 'required|string',
+            'email'      => 'required|email|unique:users,email',
+            'password'   => 'required|min:6',
+
+            'nickname'   => 'nullable|string',
             'speciality' => 'nullable|string',
-            'is_active' => 'boolean',
-            'price' => 'required|integer|min:0',
-            'image' => 'nullable|image|max:2048'
+            'price'      => 'required|integer|min:0',
+            'image'      => 'nullable|image|max:2048',
+            'is_active'  => 'boolean',
         ]);
 
-        $data = $request->all();
+        // ================= USER =================
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'role'     => 'barber',
+            'is_active' => true,
+        ]);
+
+        // ================= BARBER =================
+        $data = [
+            'user_id'    => $user->id,
+            'nickname'   => $request->nickname,
+            'speciality' => $request->speciality,
+            'price'      => $request->price,
+            'is_active'  => $request->is_active ?? 1,
+        ];
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('barbers', 'public');
@@ -41,18 +59,27 @@ class BarberController extends Controller
 
     public function update(Request $request, $id)
     {
+        $barber = Barber::with('user')->findOrFail($id);
+
         $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'nickname' => 'nullable|string',
+            'name'       => 'required|string',
+            'email'      => 'required|email|unique:users,email,' . $barber->user_id,
+
+            'nickname'   => 'nullable|string',
             'speciality' => 'nullable|string',
-            'is_active' => 'boolean',
-            'price' => 'required|integer|min:0',
-            'image' => 'nullable|image|max:2048'
+            'price'      => 'required|integer|min:0',
+            'image'      => 'nullable|image|max:2048',
+            'is_active'  => 'boolean',
         ]);
 
-        $barber = Barber::findOrFail($id);
+        // update user
+        $barber->user->update([
+            'name'  => $request->name,
+            'email' => $request->email,
+        ]);
 
-        $data = $request->all();
+        // update barber
+        $data = $request->only(['nickname', 'speciality', 'price', 'is_active']);
 
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('barbers', 'public');
@@ -66,7 +93,11 @@ class BarberController extends Controller
 
     public function destroy($id)
     {
-        Barber::findOrFail($id)->delete();
+        $barber = Barber::with('user')->findOrFail($id);
+
+        // optional: hapus user juga
+        $barber->user->delete();
+        $barber->delete();
 
         return back()->with('success', 'Barber berhasil dihapus.');
     }

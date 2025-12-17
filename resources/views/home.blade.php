@@ -7,21 +7,20 @@
         @if ($mode == 'customer')
             <h2 class="fw-bold mb-3">Halo, {{ auth()->user()->name }} 👋</h2>
 
-            @if ($upcoming)
-                <div class="card shadow-sm p-3 mb-4 bg-success text-white">
-                    <h5 class="mb-1">Booking Selanjutnya</h5>
-                    <b>{{ $upcoming->service->name }}</b><br>
-                    {{ $upcoming->date }} — {{ $upcoming->time }} <br>
-                    Barber: <b>{{ $upcoming->barber->user->name ?? 'Tidak ada' }}</b>
-                </div>
-            @endif
-
             <h4 class="fw-bold">Riwayat Booking Kamu</h4>
 
             <div class="card shadow-sm p-3">
                 @forelse ($myBookings as $b)
                     <div class="border-bottom py-2">
-                        <b>{{ $b->service->name }}</b>
+                        <b>
+                            <div class="mt-1">
+                                @foreach ($b->services as $svc)
+                                    <span class="badge badge-info">
+                                        {{ $svc->service->name }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </b>
                         <br>
                         {{ $b->date }} / {{ $b->time }} <br>
                         Status: <span class="badge badge-info">{{ $b->status }}</span>
@@ -98,16 +97,33 @@
             <div class="card shadow-sm p-3 mt-4">
                 <h5 class="fw-bold mb-3">Booking Terbaru</h5>
 
-                @foreach ($recentBookings as $b)
+                @forelse ($recentBookings as $b)
                     <div class="border-bottom py-2">
-                        <b>{{ $b->user->name ?? 'Tidak ada' }}</b> -
-                        {{ $b->service->name }}
-                        ({{ $b->date }} {{ $b->time }})
-                        —
-                        Barber <b>{{ $b->barber->user->name }}</b>
+
+                        <div class="fw-semibold">
+                            {{ $b->user->name ?? 'Tidak ada' }}
+                        </div>
+
+                        <div class="mt-1">
+                            @foreach ($b->services as $svc)
+                                <span class="badge badge-info">
+                                    {{ $svc->service->name }}
+                                </span>
+                            @endforeach
+                        </div>
+
+                        <div class="text-muted small mt-1">
+                            {{ $b->date }} {{ $b->time }}
+                            &mdash;
+                            Barber <b>{{ $b->barber->user->name }}</b>
+                        </div>
+
                     </div>
-                @endforeach
+                @empty
+                    <div class="text-muted">Belum ada booking.</div>
+                @endforelse
             </div>
+
 
             {{-- Barber Top --}}
             <div class="card shadow-sm p-3 mt-4">

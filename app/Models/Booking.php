@@ -68,4 +68,19 @@ class Booking extends Model
             ? $this->customer_name
             : optional($this->user)->name;
     }
+
+    public function services()
+    {
+        return $this->hasMany(BookingService::class);
+    }
+
+    public function getTotalServiceDurationAttribute()
+    {
+        return $this->services->sum('duration');
+    }
+
+    public function getTotalServicePriceAttribute()
+    {
+        return $this->services->sum('price');
+    }
 }

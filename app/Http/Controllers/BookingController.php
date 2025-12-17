@@ -6,117 +6,172 @@ use App\Models\Barber;
 use App\Models\Service;
 use App\Models\Booking;
 use App\Models\BarberShift;
+use App\Models\BookingService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
+
+    private function resolveWeekAndDay(string $date): array
+    {
+        $carbon = Carbon::parse($date);
+
+        $weekOfMonth = $carbon->weekOfMonth;     // 1–5
+        $weekNumber  = (($weekOfMonth - 1) % 4) + 1; // normalize ke 1–4
+        $day         = strtolower($carbon->format('l')); // monday, dst
+
+        return [$weekNumber, $day];
+    }
     public function create()
     {
-        $day = strtolower(now()->format('l'));
-
-        $barbers = Barber::whereHas('shifts', function ($q) use ($day) {
-            $q->where('day_of_week', $day)
-                ->where('is_day_off', false);
-        })
-            ->with('user')
-            ->get();
-        $services = Service::all();
-
-        return view('booking.create', compact('barbers', 'services'));
+        return view('booking.create', [
+            'barbers'  => collect(),
+            'services' => Service::all(),
+        ]);
     }
 
+    /* =============================
+        BARBER TERSEDIA BY TANGGAL
+    ============================== */
+    public function getAvailableBarbers(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date',
+        ]);
+
+        [$weekNumber, $day] = $this->resolveWeekAndDay($request->date);
+
+        $barbers = Barber::whereHas('shifts', function ($q) use ($weekNumber, $day) {
+            $q->where('week_number', $weekNumber)
+                ->where('day_of_week', $day)
+                ->where('is_day_off', false);
+        })->with('user')->get();
+
+        return response()->json($barbers);
+    }
+
+
+    /* =============================
+        SLOT JAM
+    ============================== */
     public function getAvailableSlots(Request $request)
     {
         $request->validate([
-            'barber_id'  => 'required|exists:barbers,id',
-            'service_id' => 'required|exists:services,id',
-            'date'       => 'required|date'
+            'barber_id' => 'required|exists:barbers,id',
+            'date'      => 'required|date',
         ]);
 
-        $barberId = $request->barber_id;
-        $service  = Service::findOrFail($request->service_id);
-        $duration = (int) $service->duration;
-        $date     = $request->date;
-        $day      = strtolower(Carbon::parse($date)->format('l'));
+        [$weekNumber, $day] = $this->resolveWeekAndDay($request->date);
 
-        if ($duration <= 0) {
-            return response()->json([
-                'allSlots' => [],
-                'booked' => [],
-                'available' => [],
-                'message' => 'Durasi service tidak valid'
-            ]);
-        }
-
-        $shift = BarberShift::where('barber_id', $barberId)
-            ->whereRaw('LOWER(day_of_week) = ?', [$day])
+        $shift = BarberShift::where('barber_id', $request->barber_id)
+            ->where('week_number', $weekNumber)
+            ->where('day_of_week', $day)
+            ->where('is_day_off', false)
             ->first();
 
-        if (!$shift || $shift->is_day_off) {
+        if (!$shift) {
             return response()->json([
-                'allSlots' => [],
+                'slots' => [],
                 'booked' => [],
-                'available' => [],
-                'message' => 'Barber libur'
             ]);
         }
 
-        $start = Carbon::parse($shift->start_time);
+        /* =========================
+           1. SLOT PER 1 JAM
+        ========================= */
+        $start = Carbon::parse($shift->start_time)->minute(0);
         $end   = Carbon::parse($shift->end_time);
 
-        $allSlots = [];
-        $current  = $start->copy();
+        $slots = [];
+        $cursor = $start->copy();
 
-        while ($current->copy()->addMinutes($duration)->lte($end)) {
-            $allSlots[] = $current->format('H:i');
-            $current->addMinutes($duration);
+        while ($cursor->lt($end)) {
+            $slots[] = $cursor->format('H:i');
+            $cursor->addHour();
         }
 
+        /* =========================
+           2. BOOKED SLOT (FLOOR JAM)
+        ========================= */
+        $booked = Booking::where('barber_id', $request->barber_id)
+            ->where('date', $request->date)
+            ->pluck('time')
+            ->map(function ($time) {
+                return Carbon::parse($time)->minute(0)->format('H:i');
+            })
+            ->unique()
+            ->values();
+
         return response()->json([
-            'allSlots' => $allSlots,
-            'booked' => [],
-            'available' => $allSlots
+            'allSlots'  => $slots,
+            'bookedSlots' => $booked,
         ]);
     }
 
 
+
+
+    /* =============================
+        STORE
+    ============================== */
     public function store(Request $request)
     {
         $request->validate([
-            'barber_id' => 'required',
-            'service_id' => 'required',
-            'date' => 'required|date',
-            'time' => 'required'
+            'barber_id'   => 'required|exists:barbers,id',
+            'service_ids' => 'required|array|min:1',
+            'date'        => 'required|date',
+            'time'        => 'required',
         ]);
 
-        $service = Service::find($request->service_id);
-        $barber  = Barber::find($request->barber_id);
+        $barber   = Barber::findOrFail($request->barber_id);
+        $services = Service::whereIn('id', $request->service_ids)->get();
 
-        $exists = Booking::where('barber_id', $request->barber_id)
+        $totalDuration     = $services->sum('duration');
+        $totalServicePrice = $services->sum('price');
+
+        $startTime = Carbon::parse($request->time);
+        $endTime   = $startTime->copy()->addMinutes($totalDuration);
+
+        // cek bentrok
+        $existing = Booking::with('services')
+            ->where('barber_id', $barber->id)
             ->where('date', $request->date)
-            ->where('time', $request->time)
-            ->exists();
+            ->get();
 
-        if ($exists) {
-            return back()->with('error', 'Slot sudah diambil orang lain, silakan pilih jam lain.');
+        foreach ($existing as $b) {
+            $bStart = Carbon::parse($b->time);
+            $bEnd   = $bStart->copy()->addMinutes($b->services->sum('duration'));
+
+            if ($startTime < $bEnd && $endTime > $bStart) {
+                return back()->with('error', 'Waktu bentrok dengan booking lain');
+            }
         }
 
-        Booking::create([
-            'booking_code' => "BOOK-" . strtoupper(uniqid()),
-            'user_id'       => auth()->id(),
-            'barber_id'     => $request->barber_id,
-            'service_id'    => $request->service_id,
-            'date'          => $request->date,
-            'time'          => $request->time,
-            'service_price' => $service->price,
-            'barber_price'  => $barber->price,
-            'total_price'   => $service->price + $barber->price + 10000,
+        $booking = Booking::create([
+            'booking_code' => 'BOOK-' . strtoupper(uniqid()),
+            'user_id'      => auth()->id(),
+            'barber_id'    => $barber->id,
+            'date'         => $request->date,
+            'time'         => $startTime,
+            'barber_price' => $barber->price,
+            'service_price' => $totalServicePrice,
+            'total_price'  => $totalServicePrice + $barber->price,
+            'status'       => 'pending',
         ]);
 
-        return back()->with('success', 'Booking berhasil dibuat!');
+        foreach ($services as $service) {
+            BookingService::create([
+                'booking_id' => $booking->id,
+                'service_id' => $service->id,
+                'price'      => $service->price,
+                'duration'   => $service->duration,
+            ]);
+        }
+
+        return redirect()->route('booking.history')
+            ->with('success', 'Booking berhasil dibuat');
     }
 
     public function history()

@@ -69,8 +69,6 @@ class AdminBookingController extends Controller
         ));
     }
 
-
-
     public function updateStatus(Request $request)
     {
         $booking = Booking::findOrFail($request->id);
@@ -99,37 +97,84 @@ class AdminBookingController extends Controller
     public function walkIn(Request $request)
     {
         $request->validate([
-            'customer_name'  => 'required',
-            'barber_id'      => 'required|exists:barbers,id',
-            'service_id'     => 'required|exists:services,id',
-            'date'           => 'required|date',
-            'time'           => 'required',
-            'payment_method' => 'required|in:cash,qris,transfer',
+            'customer_name' => 'required',
+            'barber_id'     => 'required|exists:barbers,id',
+            'service_id'    => 'required|exists:services,id',
+            'date'          => 'required|date',
+            'time'          => 'required',
         ]);
 
         $service = Service::findOrFail($request->service_id);
         $barber  = Barber::findOrFail($request->barber_id);
 
-        Booking::create([
-            'booking_code'   => 'WI-' . now()->format('YmdHis'),
-            'user_id'        => null,
-            'customer_name'  => $request->customer_name,
-            'source'         => 'walk_in',
+        $booking = Booking::create([
+            'booking_code'  => 'WI-' . now()->format('YmdHis'),
+            'user_id'       => null,
+            'customer_name' => $request->customer_name,
+            'source'        => 'walk_in',
 
-            'barber_id'      => $request->barber_id,
-            'service_id'     => $request->service_id,
-            'date'           => $request->date,
-            'time'           => $request->time,
+            'barber_id'     => $barber->id,
+            'date'          => $request->date,
+            'time'          => $request->time,
 
-            'service_price'  => $service->price,
-            'barber_price'   => $barber->price,
-            'total_price'    => $barber->price + $service->price,
+            'service_price' => $service->price,
+            'barber_price'  => $barber->price,
+            'total_price'   => $barber->price + $service->price,
 
-            'status'         => 'completed',
-            'payment_method' => $request->payment_method,
-            'payment_status' => 'paid',
+            // 🔥 PENTING
+            'status'        => 'checkin',
+            'payment_status' => 'unpaid',
         ]);
 
-        return back()->with('success', 'Order walk-in berhasil dicatat & diselesaikan.');
+        // simpan service ke pivot (kalau pakai multi service)
+        $booking->services()->create([
+            'service_id' => $service->id,
+            'price'      => $service->price,
+            'duration'   => $service->duration,
+        ]);
+
+        return back()->with('success', 'Order walk-in berhasil dibuat (CHECK-IN).');
+    }
+
+    public function updateServices(Request $request)
+    {
+        $request->validate([
+            'booking_id'  => 'required|exists:bookings,id',
+            'service_ids' => 'required|array|min:1',
+            'service_ids.*' => 'exists:services,id',
+        ]);
+
+        $booking = Booking::with('services')->findOrFail($request->booking_id);
+
+        if ($booking->status === 'completed') {
+            return back()->with('error', 'Booking sudah selesai, tidak bisa diubah.');
+        }
+
+        // hapus service lama
+        $booking->services()->delete();
+
+        $totalServicePrice = 0;
+        $totalDuration     = 0;
+
+        foreach ($request->service_ids as $serviceId) {
+            $service = Service::findOrFail($serviceId);
+
+            $booking->services()->create([
+                'service_id' => $service->id,
+                'price'      => $service->price,
+                'duration'   => $service->duration,
+            ]);
+
+            $totalServicePrice += $service->price;
+            $totalDuration     += $service->duration;
+        }
+
+        // update total
+        $booking->update([
+            'service_price' => $totalServicePrice,
+            'total_price'   => $totalServicePrice + $booking->barber_price,
+        ]);
+
+        return back()->with('success', 'Service booking berhasil diperbarui.');
     }
 }

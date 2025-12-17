@@ -143,8 +143,8 @@
 
                                         <td class="shift-cell" data-barber="{{ $barber->id }}"
                                             data-week="{{ $week }}" data-day="{{ $day }}"
-                                            data-start="{{ $shift->start_time ?? '' }}"
-                                            data-end="{{ $shift->end_time ?? '' }}"
+                                            data-start="{{ $shift ? \Carbon\Carbon::parse($shift->start_time)->format('H:i') : '' }}"
+                                            data-end="{{ $shift ? \Carbon\Carbon::parse($shift->end_time)->format('H:i') : '' }}"
                                             data-libur="{{ $shift?->is_day_off ?? 0 }}" style="cursor:pointer">
 
                                             @if (!$shift || $shift->is_day_off)
@@ -176,15 +176,44 @@
     <script>
         document.querySelectorAll('.shift-cell').forEach(cell => {
             cell.addEventListener('click', () => {
-                barber_id.value = cell.dataset.barber
-                day_of_week.value = cell.dataset.day
-                week_number.value = cell.dataset.week
-                start_time.value = cell.dataset.start
-                end_time.value = cell.dataset.end
-                is_day_off.value = cell.dataset.libur
 
-                new bootstrap.Modal(document.getElementById('modalShift')).show()
-            })
-        })
+                const isLibur = cell.dataset.libur === '1';
+
+                barber_id.value = cell.dataset.barber;
+                day_of_week.value = cell.dataset.day;
+                week_number.value = cell.dataset.week;
+
+                is_day_off.value = isLibur ? '1' : '0';
+
+                // ⬇️ FIX UTAMA DI SINI
+                start_time.value = isLibur ? '' : formatTime(cell.dataset.start);
+                end_time.value = isLibur ? '' : formatTime(cell.dataset.end);
+
+                toggleTime(isLibur);
+
+                new bootstrap.Modal(
+                    document.getElementById('modalShift')
+                ).show();
+            });
+        });
+
+        function formatTime(t) {
+            return t ? t.substring(0, 5) : '';
+        }
+
+        function toggleTime(isLibur) {
+            start_time.disabled = isLibur;
+            end_time.disabled = isLibur;
+        }
+
+        is_day_off.addEventListener('change', function() {
+            const libur = this.value === '1';
+            toggleTime(libur);
+
+            if (libur) {
+                start_time.value = '';
+                end_time.value = '';
+            }
+        });
     </script>
 @endsection

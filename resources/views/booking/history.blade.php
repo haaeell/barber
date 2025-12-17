@@ -1,18 +1,14 @@
 @php
     function statusBadge($status)
     {
-        switch ($status) {
-            case 'pending':
-                return 'badge badge-warning';
-            case 'confirmed':
-                return 'badge badge-info';
-            case 'checkin':
-                return 'badge badge-primary';
-            case 'completed':
-                return 'badge badge-success';
-            case 'canceled':
-                return 'badge badge-danger';
-        }
+        return match ($status) {
+            'pending' => 'badge badge-warning',
+            'confirmed' => 'badge badge-info',
+            'checkin' => 'badge badge-primary',
+            'completed' => 'badge badge-success',
+            'canceled' => 'badge badge-danger',
+            default => 'badge badge-secondary',
+        };
     }
 @endphp
 
@@ -36,11 +32,20 @@
         }
 
         .booking-image {
-            width: 120px;
-            height: 120px;
+            width: 110px;
+            height: 110px;
             object-fit: cover;
             border-radius: 10px;
             margin-right: 20px;
+        }
+
+        .service-badge {
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 13px;
+            margin: 3px 4px 3px 0;
+            display: inline-block;
         }
 
         .action-btn {
@@ -53,16 +58,22 @@
 
         <h2 class="fw-bold mb-4">Riwayat Booking</h2>
 
-        @foreach ($bookings as $booking)
+        @forelse ($bookings as $booking)
             <div class="booking-card shadow-sm">
 
                 {{-- FOTO BARBER --}}
                 <img src="{{ asset('storage/' . ($booking->barber->image ?? 'default-barber.jpg')) }}" class="booking-image">
 
-                {{-- INFORMASI BOOKING --}}
+                {{-- INFO --}}
                 <div style="flex:1">
-                    <h5 class="mb-1">
-                        {{ $booking->service->name }}
+
+                    {{-- SERVICES --}}
+                    <h5 class="mb-2">
+                        @foreach ($booking->services as $svc)
+                            <span class="service-badge">
+                                {{ $svc->service->name }}
+                            </span>
+                        @endforeach
                     </h5>
 
                     <p class="text-muted mb-1">
@@ -70,37 +81,38 @@
                     </p>
 
                     <p class="mb-1">
-                        Tanggal: <b>{{ $booking->date }}</b><br>
-                        Jam: <b>{{ $booking->time }}</b>
+                        Tanggal: <b>{{ $booking->date->format('d M Y') }}</b><br>
+                        Jam: <b>{{ \Carbon\Carbon::parse($booking->time)->format('H:i') }}</b>
+                        <span class="text-muted">
+                            ({{ $booking->total_service_duration }} menit)
+                        </span>
                     </p>
 
-                    <p class="mb-1">
-                        Total: <b>Rp {{ number_format($booking->total_price) }}</b>
+                    <p class="mb-2">
+                        Total:
+                        <b class="text-primary">
+                            Rp {{ number_format($booking->total_price) }}
+                        </b>
                     </p>
 
                     <span class="{{ statusBadge($booking->status) }}">
                         {{ ucfirst($booking->status) }}
                     </span>
 
-                    {{-- REVIEW BUTTON --}}
-                    @if ($booking->status == 'completed' && !$booking->review)
-                        <a href="#" class="btn btn-sm btn-primary action-btn mt-2">
-                            Beri Review
-                        </a>
+                    {{-- REVIEW --}}
+                    @if ($booking->status === 'completed' && !$booking->review)
+                        <div class="mt-2">
+                            <a href="#" class="btn btn-sm btn-primary action-btn">
+                                Beri Review
+                            </a>
+                        </div>
                     @endif
-
                 </div>
 
-                {{-- FOTO SERVICE --}}
-                <img src="{{ asset('storage/' . ($booking->service->image ?? 'default-service.jpg')) }}"
-                    class="booking-image">
-
             </div>
-        @endforeach
-
-        @if ($bookings->count() == 0)
+        @empty
             <div class="alert alert-info">Belum ada booking.</div>
-        @endif
+        @endforelse
 
     </div>
 @endsection

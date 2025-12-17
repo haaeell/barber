@@ -36,12 +36,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booking/store', [BookingController::class, 'store'])->name('booking.store');
     Route::get('/booking/history', [BookingController::class, 'history'])->name('booking.history');
 
+    Route::post('/booking/barbers', [BookingController::class, 'getAvailableBarbers']);
+
     Route::get('/admin/bookings', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
     Route::post('/admin/bookings/update-status', [AdminBookingController::class, 'updateStatus'])->name('admin.bookings.updateStatus');
     Route::post('/admin/bookings/complete', [AdminBookingController::class, 'complete'])
         ->name('admin.bookings.complete');
     Route::post('/admin/bookings/walkin', [AdminBookingController::class, 'walkIn'])
         ->name('admin.bookings.walkin');
+    Route::post('/admin/bookings/update-services', [AdminBookingController::class, 'updateServices'])
+        ->name('admin.bookings.updateServices');
+
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/barber/{id}', [ReportController::class, 'barberReport'])

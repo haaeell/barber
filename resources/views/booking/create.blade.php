@@ -1,13 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-    {{-- FLATPICKR --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
     <style>
-        /* ---------------------------
-                        WIZARD PROGRESS BAR
-                    ---------------------------- */
+        /* ===========================
+                                                                       WIZARD PROGRESS
+                                                                    =========================== */
         .wizard-container {
             display: flex;
             justify-content: space-between;
@@ -24,11 +23,11 @@
         }
 
         .wizard-step.active {
-            color: #007bff;
+            color: #0d6efd;
         }
 
         .wizard-step.completed {
-            color: #28a745;
+            color: #198754;
         }
 
         .wizard-step::before {
@@ -68,8 +67,8 @@
         }
 
         /* ---------------------------
-                        PAGE ANIMATION SLIDE
-                    ---------------------------- */
+                                                                            PAGE ANIMATION SLIDE
+                                                                        ---------------------------- */
         .step-page {
             display: none;
             animation-duration: 0.4s;
@@ -111,86 +110,74 @@
             }
         }
 
-        /* ---------------------------
-                        CARD STYLE
-                    ---------------------------- */
+        /* ===========================
+                                                                       CARD STYLE
+                                                                    =========================== */
         .barber-card,
         .service-card {
             border-radius: 12px;
             border: 1px solid #eee;
-            transition: 0.2s;
+            padding: 10px;
             cursor: pointer;
+            transition: .2s;
         }
 
         .barber-card:hover,
         .service-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, .08);
         }
 
-        .barber-card.selected,
-        .service-card.selected {
-            border: 2px solid #007bff;
-            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.2);
+        .selected {
+            border: 2px solid #0d6efd;
         }
 
-        /* SLOT BUTTON */
+        /* SLOT */
         .slot-btn {
             min-width: 90px;
-            border-radius: 10px;
             margin: 5px;
+            border-radius: 10px;
         }
 
         .slot-btn.active {
-            background: #28a745 !important;
-            color: white !important;
+            background: #198754;
+            color: #fff;
         }
     </style>
 
     <div class="container mt-4">
 
-        {{-- PROGRESS BAR --}}
+        {{-- PROGRESS --}}
         <div class="wizard-container">
-            <div class="wizard-step active" data-step="1" id="nav-step-1">Barber</div>
-            <div class="wizard-step" data-step="2" id="nav-step-2">Service</div>
-            <div class="wizard-step" data-step="3" id="nav-step-3">Tanggal</div>
-            <div class="wizard-step" data-step="4" id="nav-step-4">Jam</div>
-            <div class="wizard-step" data-step="5" id="nav-step-5">Konfirmasi</div>
+            <div class="wizard-step active" id="nav1">Tanggal</div>
+            <div class="wizard-step" id="nav2">Kapster</div>
+            <div class="wizard-step" id="nav3">Service</div>
+            <div class="wizard-step" id="nav4">Jam</div>
+            <div class="wizard-step" id="nav5">Konfirmasi</div>
         </div>
 
-        {{-- =========================
-        STEP 1 - BARBER
-    ========================== --}}
+        {{-- STEP 1 : TANGGAL --}}
         <div id="step1" class="step-page active slide-right">
-            <h3>Pilih Barber</h3>
-            <p class="text-muted mb-3">Pilih barber favorit Anda.</p>
+            <h4>Pilih Tanggal</h4>
+            <input type="text" id="date" class="form-control col-md-4 mb-3">
+            <button class="btn btn-primary" id="nextToBarber">Lanjut</button>
+        </div>
 
-            <div class="row">
-                @foreach ($barbers as $b)
-                    <div class="col-md-4 mb-3">
-                        <div class="barber-card p-2 shadow-sm" data-id="{{ $b->id }}"
-                            data-name="{{ $b->user->name }}" data-price="{{ $b->price }}">
-                            <img src="{{ asset('storage/' . ($b->image ?? 'default-barber.jpg')) }}"
-                                class="w-100 rounded mb-2" style="height:160px;object-fit:cover;">
-                            <h5 class="text-center">{{ $b->user->name }}</h5>
-                            <p class="text-center text-muted mb-1">
-                                Rp {{ number_format($b->price) }}
-                            </p>
-                            <button class="btn btn-primary btn-sm w-100 mt-1 next-from-barber">
-                                Pilih Barber
-                            </button>
-                        </div>
-                    </div>
-                @endforeach
+        {{-- STEP 2 : BARBER --}}
+        <div id="step2" class="step-page">
+            <h3>Pilih Kapster</h3>
+            <p class="text-muted mb-3">Pilih kapster yang tersedia.</p>
+
+            <div class="row" id="barberContainer">
+                {{-- diisi via JS --}}
             </div>
         </div>
 
-        {{-- =========================
-        STEP 2 - SERVICE
-    ========================== --}}
-        <div id="step2" class="step-page">
+
+        {{-- STEP 3 : SERVICE --}}
+        <div id="step3" class="step-page">
             <h3>Pilih Service</h3>
-            <p class="text-muted mb-3">Pilih layanan yang Anda inginkan.</p>
+            <p class="text-muted mb-3">Anda bisa memilih lebih dari satu layanan.</p>
 
             <div class="row">
                 @foreach ($services as $s)
@@ -198,223 +185,260 @@
                         <div class="service-card p-2 shadow-sm" data-id="{{ $s->id }}"
                             data-name="{{ $s->name }}" data-price="{{ $s->price }}"
                             data-duration="{{ $s->duration }}">
+
                             <img src="{{ asset('storage/' . ($s->image ?? 'default-service.jpg')) }}"
                                 class="w-100 rounded mb-2" style="height:160px;object-fit:cover;">
+
                             <h5 class="text-center">{{ $s->name }}</h5>
-                            {{-- <p class="text-muted text-center mb-1">{{ $s->duration }} menit</p> --}}
-                            <p class="text-center text-muted">Rp {{ number_format($s->price) }}</p>
-                            <button class="btn btn-primary btn-sm w-100 mt-1 next-from-service">
-                                Pilih Service
-                            </button>
+                            <p class="text-muted text-center mb-1">
+                                {{ $s->duration }} menit
+                            </p>
+                            <p class="text-center text-muted">
+                                Rp {{ number_format($s->price) }}
+                            </p>
                         </div>
                     </div>
                 @endforeach
             </div>
 
+            <button class="btn btn-primary mt-3" id="nextToSlot">
+                Lanjut
+            </button>
         </div>
 
-        {{-- =========================
-        STEP 3 - TANGGAL
-    ========================== --}}
-        <div id="step3" class="step-page">
-            <h3>Pilih Tanggal</h3>
-            <p class="text-muted">Pilih tanggal sesuai jadwal barber.</p>
 
-            <input type="text" id="date" class="form-control col-md-4 mb-4" placeholder="Pilih tanggal...">
-
-            <button class="btn btn-primary next-step-3">Lanjut</button>
-        </div>
-
-        {{-- =========================
-        STEP 4 - JAM
-    ========================== --}}
-        <div id="step4" class="step-page">
+        {{-- STEP 4 : JAM --}}
+        <div id="step4" class="step-page" style="display:none">
             <h3>Pilih Jam</h3>
-            <p class="text-muted">Slot kosong berdasarkan shift barber & durasi.</p>
 
             <div id="slotContainer" class="d-flex flex-wrap"></div>
         </div>
 
-        {{-- =========================
-        STEP 5 - KONFIRMASI
-    ========================== --}}
-        <div id="step5" class="step-page">
-            <h3>Konfirmasi Booking</h3>
+        {{-- STEP 5 : KONFIRMASI --}}
+        <div id="step5" class="step-page" style="display:none">
+            <h4>Konfirmasi Booking</h4>
 
-            <div class="card p-3 shadow-sm">
-                <p><b>Barber:</b> <span id="summaryBarber">-</span></p>
-                <p><b>Service:</b> <span id="summaryService">-</span></p>
-                <p><b>Tanggal:</b> <span id="summaryDate">-</span></p>
-                <p><b>Jam:</b> <span id="summaryTime">-</span></p>
+            <div class="card p-3">
+                <p><b>Tanggal:</b> <span id="sumDate"></span></p>
+                <p><b>Kapster:</b> <span id="sumBarber"></span></p>
+                <p><b>Service:</b> <span id="sumService"></span></p>
+                <p><b>Jam:</b> <span id="sumTime"></span></p>
 
-                <hr>
+                <h4 class="text-primary">Total: Rp <span id="sumTotal"></span></h4>
 
-                <h4>Total:</h4>
-                <h2 id="summaryTotal" class="text-primary">Rp 0</h2>
-
-                <form method="POST" action="{{ route('booking.store') }}">
+                <form method="POST" action="{{ route('booking.store') }}"id="bookingForm">
                     @csrf
-
-                    <input type="hidden" name="barber_id" id="formBarber">
-                    <input type="hidden" name="service_id" id="formService">
                     <input type="hidden" name="date" id="formDate">
+                    <input type="hidden" name="barber_id" id="formBarber">
                     <input type="hidden" name="time" id="formTime">
-
-                    <button class="btn btn-success w-100 mt-3">Konfirmasi Booking</button>
+                    <button class="btn btn-success w-100 mt-3">
+                        Konfirmasi Booking
+                    </button>
                 </form>
             </div>
         </div>
+
     </div>
 
-    {{-- =========================
-    JAVASCRIPT — WIZARD LOGIC
-========================= --}}
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script>
-        let currentStep = 1;
-        let barberPrice = 0;
-        let servicePrice = 0;
+        let selectedDate = null;
+        let selectedBarber = null;
+        let selectedServices = [];
+        let totalPrice = 0;
 
-        /* -----------------------
-            WIZARD HELPER
-        ------------------------ */
-        function goToStep(step, direction = 'left') {
-            document.querySelector(`#step${currentStep}`).classList.remove("active");
-            document.querySelector(`#nav-step-${currentStep}`).classList.remove("active");
-
-            document.querySelector(`#nav-step-${currentStep}`).classList.add("completed");
-
-            currentStep = step;
-
-            let newPage = document.querySelector(`#step${step}`);
-            newPage.classList.add("active");
-            newPage.classList.add(direction === 'left' ? "slide-left" : "slide-right");
-
-            document.querySelector(`#nav-step-${step}`).classList.add("active");
-        }
-
-        /* -----------------------
-            STEP 1 - PILIH BARBER
-        ------------------------ */
-        document.querySelectorAll(".next-from-barber").forEach(btn => {
-            btn.onclick = function() {
-                const parent = this.closest(".barber-card");
-
-                document.querySelectorAll(".barber-card").forEach(c => c.classList.remove("selected"));
-                parent.classList.add("selected");
-
-                barberPrice = parseInt(parent.dataset.price);
-
-                document.getElementById("formBarber").value = parent.dataset.id;
-                document.getElementById("summaryBarber").innerText = parent.dataset.name;
-
-                goToStep(2);
-            };
-        });
-
-        /* -----------------------
-            STEP 2 - PILIH SERVICE
-        ------------------------ */
-        document.querySelectorAll(".next-from-service").forEach(btn => {
-            btn.onclick = function() {
-                const parent = this.closest(".service-card");
-
-                document.querySelectorAll(".service-card").forEach(c => c.classList.remove("selected"));
-                parent.classList.add("selected");
-
-                servicePrice = parseInt(parent.dataset.price);
-
-                document.getElementById("formService").value = parent.dataset.id;
-                document.getElementById("summaryService").innerText = parent.dataset.name;
-
-                document.getElementById("summaryTotal").innerText =
-                    "Rp " + (barberPrice + servicePrice).toLocaleString();
-
-                goToStep(3);
-            };
-        });
-
-        /* -----------------------
-            STEP 3 - TANGGAL
-        ------------------------ */
+        /* =====================
+           DATE
+        ===================== */
         flatpickr("#date", {
             minDate: "today",
-            dateFormat: "Y-m-d",
-            onChange: function(selectedDates, dateStr) {
-                document.getElementById("summaryDate").innerText = dateStr;
+            dateFormat: "Y-m-d"
+        });
+
+        document.getElementById("nextToBarber").onclick = () => {
+            selectedDate = document.getElementById("date").value;
+            if (!selectedDate) return alert("Pilih tanggal dulu");
+
+            document.getElementById("formDate").value = selectedDate;
+            document.getElementById("sumDate").innerText = selectedDate;
+
+            fetch("/booking/barbers", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        date: selectedDate
+                    })
+                })
+                .then(r => r.json())
+                .then(barbers => {
+                    const container = document.getElementById("barberContainer");
+                    container.innerHTML = "";
+
+                    if (barbers.length === 0) {
+                        container.innerHTML = "<p class='text-muted'>Tidak ada kapster tersedia</p>";
+                        return;
+                    }
+
+                    barbers.forEach(b => {
+                        barberContainer.innerHTML += `
+        <div class="col-md-4 mb-3">
+            <div class="barber-card p-2 shadow-sm"
+                data-id="${b.id}"
+                data-name="${b.user.name}"
+                data-price="${b.price}">
+                
+                <img src="/storage/${b.image ?? 'default-barber.jpg'}"
+                     class="w-100 rounded mb-2"
+                     style="height:160px;object-fit:cover;">
+                
+                <h5 class="text-center">${b.user.name}</h5>
+                <p class="text-center text-muted mb-1">
+                    Rp ${Number(b.price).toLocaleString()}
+                </p>
+
+                <button class="btn btn-primary btn-sm w-100 mt-1 pilih-barber">
+                    Pilih Kapster
+                </button>
+            </div>
+        </div>
+    `;
+                    });
+
+
+                    showStep(2);
+                });
+        };
+
+        /* =====================
+           BARBER
+        ===================== */
+        document.addEventListener("click", e => {
+            if (e.target.closest(".barber-card")) {
+                document.querySelectorAll(".barber-card").forEach(c => c.classList.remove("selected"));
+                const card = e.target.closest(".barber-card");
+                card.classList.add("selected");
+
+                selectedBarber = card.dataset.id;
+                document.getElementById("formBarber").value = selectedBarber;
+                document.getElementById("sumBarber").innerText = card.dataset.name;
+                totalPrice = parseInt(card.dataset.price);
+
+                showStep(3);
             }
         });
 
-        document.querySelector(".next-step-3").onclick = function() {
-            const date = document.getElementById("date").value;
-            if (!date) return alert("Pilih tanggal dulu");
+        /* =====================
+           SERVICE
+        ===================== */
+        document.querySelectorAll(".service-card").forEach(card => {
+            card.onclick = () => {
+                const id = card.dataset.id;
+                const price = parseInt(card.dataset.price);
 
-            document.getElementById("formDate").value = date;
+                if (selectedServices.includes(id)) {
+                    selectedServices = selectedServices.filter(s => s !== id);
+                    totalPrice -= price;
+                    card.classList.remove("selected");
+                } else {
+                    selectedServices.push(id);
+                    totalPrice += price;
+                    card.classList.add("selected");
+                }
 
-            loadSlots();
-            goToStep(4);
-        };
+                document.getElementById("sumService").innerText =
+                    selectedServices.length + " service dipilih";
 
-        /* -----------------------
-            STEP 4 - LOAD JAM
-        ------------------------ */
-        function loadSlots() {
-            let barber = document.getElementById("formBarber").value;
-            let service = document.getElementById("formService").value;
-            let date = document.getElementById("formDate").value;
+                document.getElementById("sumTotal").innerText =
+                    totalPrice.toLocaleString();
+            };
+        });
+
+
+        document.getElementById("nextToSlot").onclick = () => {
+            if (selectedServices.length === 0) return alert("Pilih service dulu");
+
+            const form = document.getElementById("bookingForm");
+
+            form.querySelectorAll("input[name='service_ids[]']").forEach(i => i.remove());
+
+            selectedServices.forEach(id => {
+                let input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "service_ids[]";
+                input.value = id;
+                form.appendChild(input);
+            });
 
             fetch("/booking/slots", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        barber_id: barber,
-                        service_id: service,
-                        date: date
+                        barber_id: selectedBarber,
+                        service_ids: selectedServices,
+                        date: selectedDate
                     })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    let container = document.getElementById("slotContainer");
+                .then(r => r.json())
+                .then(res => {
+                    const container = document.getElementById("slotContainer");
                     container.innerHTML = "";
 
-                    const allSlots = data.allSlots; // kita kirim dari backend nanti
-                    const bookedSlots = data.booked; // array jam yg sudah dibooking
+                    const allSlots = res.allSlots ?? [];
+                    const bookedSlots = res.bookedSlots ?? [];
 
                     allSlots.forEach(slot => {
-
                         let btn = document.createElement("button");
                         btn.type = "button";
                         btn.className = "slot-btn btn";
+                        btn.innerText = slot;
 
-                        // Jika slot booked
                         if (bookedSlots.includes(slot)) {
+                            // 🔒 SLOT BENTROK
                             btn.classList.add("btn-secondary");
                             btn.disabled = true;
                             btn.innerText = slot + " (Booked)";
                         } else {
+                            // ✅ SLOT KOSONG
                             btn.classList.add("btn-outline-success");
-                            btn.innerText = slot;
 
-                            btn.onclick = function() {
-                                document.querySelectorAll(".slot-btn").forEach(b => b.classList.remove(
-                                    "active"));
+                            btn.onclick = () => {
+                                document.querySelectorAll(".slot-btn").forEach(b =>
+                                    b.classList.remove("active")
+                                );
+
                                 btn.classList.add("active");
 
                                 document.getElementById("formTime").value = slot;
-                                document.getElementById("summaryTime").innerText = slot;
+                                document.getElementById("sumTime").innerText = slot;
 
-                                goToStep(5);
+                                showStep(5);
                             };
                         }
 
                         container.appendChild(btn);
                     });
+
+                    showStep(4);
                 });
 
+        };
+
+        /* =====================
+           HELPER
+        ===================== */
+        function showStep(n) {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById("step" + i).style.display = i === n ? "block" : "none";
+                document.getElementById("nav" + i).classList.toggle("active", i === n);
+                if (i < n) document.getElementById("nav" + i).classList.add("completed");
+            }
         }
     </script>
 @endsection
