@@ -13,6 +13,7 @@ use App\Models\Booking;
 use App\Models\BarberShift;
 use App\Models\BookingService;
 use App\Models\Review;
+use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
 {
