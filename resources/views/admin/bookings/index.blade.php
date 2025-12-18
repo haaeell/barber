@@ -179,6 +179,44 @@
         </div>
     </div>
 
+
+
+    <div class="modal fade" id="modalEditService" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <form method="POST" action="{{ route('admin.bookings.updateServices') }}" class="modal-content">
+                @csrf
+
+                <input type="hidden" name="booking_id" id="edit_booking_id">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Service Booking</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <label>Service</label>
+
+                    @foreach ($services as $s)
+                        <div class="form-check">
+                            <input class="form-check-input service-checkbox" type="checkbox" name="service_ids[]"
+                                value="{{ $s->id }}" id="svc{{ $s->id }}">
+
+                            <label class="form-check-label" for="svc{{ $s->id }}">
+                                {{ $s->name }} — Rp {{ number_format($s->price) }}
+                            </label>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary w-100">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function openPaymentModal(id) {
             document.getElementById('payment_booking_id').value = id
