@@ -110,7 +110,6 @@ return new class extends Migration
 
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignId('barber_id')->nullable()->constrained('barbers')->nullOnDelete();
-            $table->foreignId('service_id')->constrained('services')->cascadeOnDelete();
 
             $table->date('date'); // User pilih tanggal
             $table->time('time'); // User pilih slot jam kosong (hasil perhitungan backend)
