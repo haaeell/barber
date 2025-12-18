@@ -81,16 +81,17 @@
         {{-- ================= TABS ================= --}}
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
-                <button class="nav-link active" data-toggle="tab" data-target="#tab-online">
+                <button class="nav-link active" id="tab-online-btn" data-toggle="tab" data-target="#tab-online">
                     📱 Booking Online
                 </button>
             </li>
             <li class="nav-item">
-                <button class="nav-link" data-toggle="tab" data-target="#tab-walkin">
+                <button class="nav-link" id="tab-walkin-btn" data-toggle="tab" data-target="#tab-walkin">
                     🚶 Order Manual
                 </button>
             </li>
         </ul>
+
 
         <div class="tab-content">
 
@@ -218,6 +219,29 @@
     </div>
 
     <script>
+        const TAB_KEY = 'booking_active_tab';
+
+        document.querySelectorAll('.nav-tabs .nav-link').forEach(tab => {
+            tab.addEventListener('click', function() {
+                localStorage.setItem(TAB_KEY, this.id);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const activeTab = localStorage.getItem(TAB_KEY);
+
+            if (activeTab) {
+                const tabButton = document.getElementById(activeTab);
+                if (tabButton) {
+                    $(tabButton).tab('show');
+                }
+            }
+        });
+
+        document.querySelector('#modalWalkIn form')?.addEventListener('submit', function() {
+            localStorage.setItem(TAB_KEY, 'tab-walkin-btn');
+        });
+
         function openPaymentModal(id) {
             document.getElementById('payment_booking_id').value = id
             $('#paymentModal').modal('show')
