@@ -50,8 +50,14 @@ class AdminBookingController extends Controller
 
             ->when($from && $to, fn($q) => $q->whereBetween('date', [$from, $to]))
 
-            ->orderBy('date', 'desc')
-            ->orderBy('time', 'desc')
+            ->orderByRaw("
+                CASE 
+                    WHEN status = 'completed' THEN 1 
+                    ELSE 0 
+                END
+            ")
+            ->orderBy('date', 'asc')
+            ->orderBy('time', 'asc')
             ->get();
 
         // ================= DATA FILTER =================
