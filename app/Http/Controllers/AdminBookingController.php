@@ -107,8 +107,6 @@ class AdminBookingController extends Controller
             'customer_name' => 'required',
             'barber_id' => 'required|exists:barbers,id',
             'service_id' => 'required|exists:services,id',
-            'date' => 'required|date',
-            'time' => 'required',
         ]);
 
         $service = Service::findOrFail($request->service_id);
@@ -126,9 +124,6 @@ class AdminBookingController extends Controller
 
         $totalPrice = $servicePrice; // barber tidak nambah kalau non-haircut
 
-        // =========================
-        // SIMPAN BOOKING
-        // =========================
         $booking = Booking::create([
             'booking_code' => 'WI-' . now()->format('YmdHis'),
             'user_id' => null,
@@ -136,8 +131,8 @@ class AdminBookingController extends Controller
             'source' => 'walk_in',
 
             'barber_id' => $barber->id,
-            'date' => Carbon::parse($request->date)->format('Y-m-d'),
-            'time' => Carbon::parse($request->time)->format('H:i:s'),
+            'date' => Carbon::now()->format('Y-m-d'),
+            'time' => Carbon::now()->format('H:i:s'),
 
             'service_price' => $servicePrice,
             'barber_price' => $barberPrice,
