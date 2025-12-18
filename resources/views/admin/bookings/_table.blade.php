@@ -18,9 +18,9 @@
             </thead>
 
             <tbody>
-                @forelse ($rows as $i => $b)
+                @forelse ($rows as $b)
                     <tr>
-                        <td>{{ $i + 1 }}</td>
+                        <td>{{ $loop->iteration }}</td>
                         <td>{{ \Carbon\Carbon::parse($b->date)->format('d F Y') }}</td>
                         <td>{{ \Carbon\Carbon::parse($b->time)->format('H:i') }}</td>
 
