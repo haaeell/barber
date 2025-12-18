@@ -6,6 +6,7 @@ use App\Models\Barber;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\Service;
+use Carbon\Carbon;
 
 class AdminBookingController extends Controller
 {
@@ -106,8 +107,6 @@ class AdminBookingController extends Controller
             'customer_name' => 'required',
             'barber_id'     => 'required|exists:barbers,id',
             'service_id'    => 'required|exists:services,id',
-            'date'          => 'required|date',
-            'time'          => 'required',
         ]);
 
         $service = Service::findOrFail($request->service_id);
@@ -120,19 +119,17 @@ class AdminBookingController extends Controller
             'source'        => 'walk_in',
 
             'barber_id'     => $barber->id,
-            'date'          => $request->date,
-            'time'          => $request->time,
+            'date'          => Carbon::parse($request->date)->format('Y-m-d'),
+            'time'          => Carbon::parse($request->time)->format('H:i:s'),
 
             'service_price' => $service->price,
             'barber_price'  => $barber->price,
             'total_price'   => $barber->price + $service->price,
 
-            // 🔥 PENTING
             'status'        => 'checkin',
             'payment_status' => 'unpaid',
         ]);
 
-        // simpan service ke pivot (kalau pakai multi service)
         $booking->services()->create([
             'service_id' => $service->id,
             'price'      => $service->price,

@@ -139,13 +139,6 @@
                                 <option value="{{ $s->id }}">{{ $s->name }}</option>
                             @endforeach
                         </select>
-
-                        <label>Tanggal</label>
-                        <input type="date" name="date" class="form-control mb-2"
-                            value="{{ now()->format('Y-m-d') }}">
-
-                        <label>Jam</label>
-                        <input type="time" name="time" class="form-control mb-2" value="{{ now()->format('H:i') }}">
                     </div>
 
                     <div class="modal-footer">
