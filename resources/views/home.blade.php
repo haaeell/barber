@@ -101,7 +101,7 @@
                     <div class="border-bottom py-2">
 
                         <div class="fw-semibold">
-                            {{ $b->user->name ?? 'Tidak ada' }}
+                            {{ $b->user->name ?? $b->customer_name }}
                         </div>
 
                         <div class="mt-1">
@@ -113,7 +113,8 @@
                         </div>
 
                         <div class="text-muted small mt-1">
-                            {{ $b->date }} {{ $b->time }}
+                            {{ \Carbon\Carbon::parse($b->date)->format('d F Y') }}
+                            {{ \Carbon\Carbon::parse($b->time)->format('H:i') }}
                             &mdash;
                             Barber <b>{{ $b->barber->user->name }}</b>
                         </div>

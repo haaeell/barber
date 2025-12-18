@@ -14,12 +14,12 @@ class AdminBookingController extends Controller
     {
         $user = auth()->user();
 
-        $status  = $request->status;
-        $barber  = $request->barber;
+        $status = $request->status;
+        $barber = $request->barber;
         $service = $request->service;
-        $search  = $request->search;
-        $from    = $request->from;
-        $to      = $request->to;
+        $search = $request->search;
+        $from = $request->from;
+        $to = $request->to;
 
         $bookings = Booking::with(['barber.user', 'service', 'user'])
 
@@ -52,7 +52,7 @@ class AdminBookingController extends Controller
             ->when($from && $to, fn($q) => $q->whereBetween('date', [$from, $to]))
 
             ->orderByRaw("
-            CASE 
+            CASE
                 WHEN status IN ('completed', 'canceled') THEN 1
                 ELSE 0
             END
@@ -105,44 +105,62 @@ class AdminBookingController extends Controller
     {
         $request->validate([
             'customer_name' => 'required',
-            'barber_id'     => 'required|exists:barbers,id',
-            'service_id'    => 'required|exists:services,id',
+            'barber_id' => 'required|exists:barbers,id',
+            'service_id' => 'required|exists:services,id',
+            'date' => 'required|date',
+            'time' => 'required',
         ]);
 
         $service = Service::findOrFail($request->service_id);
-        $barber  = Barber::findOrFail($request->barber_id);
+        $barber = Barber::findOrFail($request->barber_id);
 
+        $isHaircut = strtolower($service->name) === 'haircut';
+
+        $servicePrice = $isHaircut
+            ? $barber->price       // haircut ikut barber
+            : $service->price;     // selain haircut
+
+        $barberPrice = $isHaircut
+            ? $barber->price       // cuma info
+            : 0;
+
+        $totalPrice = $servicePrice; // barber tidak nambah kalau non-haircut
+
+        // =========================
+        // SIMPAN BOOKING
+        // =========================
         $booking = Booking::create([
-            'booking_code'  => 'WI-' . now()->format('YmdHis'),
-            'user_id'       => null,
+            'booking_code' => 'WI-' . now()->format('YmdHis'),
+            'user_id' => null,
             'customer_name' => $request->customer_name,
-            'source'        => 'walk_in',
+            'source' => 'walk_in',
 
-            'barber_id'     => $barber->id,
-            'date'          => Carbon::parse($request->date)->format('Y-m-d'),
-            'time'          => Carbon::parse($request->time)->format('H:i:s'),
+            'barber_id' => $barber->id,
+            'date' => Carbon::parse($request->date)->format('Y-m-d'),
+            'time' => Carbon::parse($request->time)->format('H:i:s'),
 
-            'service_price' => $service->price,
-            'barber_price'  => $barber->price,
-            'total_price'   => $barber->price + $service->price,
+            'service_price' => $servicePrice,
+            'barber_price' => $barberPrice,
+            'total_price' => $totalPrice,
 
-            'status'        => 'checkin',
+            'status' => 'checkin',
             'payment_status' => 'unpaid',
         ]);
 
         $booking->services()->create([
             'service_id' => $service->id,
-            'price'      => $service->price,
-            'duration'   => $service->duration,
+            'price' => $servicePrice,
+            'duration' => $service->duration,
         ]);
 
         return back()->with('success', 'Order walk-in berhasil dibuat (CHECK-IN).');
     }
 
+
     public function updateServices(Request $request)
     {
         $request->validate([
-            'booking_id'  => 'required|exists:bookings,id',
+            'booking_id' => 'required|exists:bookings,id',
             'service_ids' => 'required|array|min:1',
             'service_ids.*' => 'exists:services,id',
         ]);
@@ -157,25 +175,25 @@ class AdminBookingController extends Controller
         $booking->services()->delete();
 
         $totalServicePrice = 0;
-        $totalDuration     = 0;
+        $totalDuration = 0;
 
         foreach ($request->service_ids as $serviceId) {
             $service = Service::findOrFail($serviceId);
 
             $booking->services()->create([
                 'service_id' => $service->id,
-                'price'      => $service->price,
-                'duration'   => $service->duration,
+                'price' => $service->price,
+                'duration' => $service->duration,
             ]);
 
             $totalServicePrice += $service->price;
-            $totalDuration     += $service->duration;
+            $totalDuration += $service->duration;
         }
 
         // update total
         $booking->update([
             'service_price' => $totalServicePrice,
-            'total_price'   => $totalServicePrice + $booking->barber_price,
+            'total_price' => $totalServicePrice + $booking->barber_price,
         ]);
 
         return back()->with('success', 'Service booking berhasil diperbarui.');

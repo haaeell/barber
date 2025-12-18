@@ -113,7 +113,7 @@
 
                                                 <label>Role</label>
                                                 <select name="role" class="form-control">
-                                                    @foreach (['customer', 'barber', 'admin', 'owner'] as $role)
+                                                    @foreach ([ 'admin', 'owner'] as $role)
                                                         <option value="{{ $role }}"
                                                             {{ $u->role == $role ? 'selected' : '' }}>
                                                             {{ ucfirst($role) }}
@@ -226,8 +226,6 @@
 
                             <label>Role</label>
                             <select name="role" class="form-control">
-                                <option value="customer">Customer</option>
-                                <option value="barber">Barber</option>
                                 <option value="admin">Admin</option>
                                 <option value="owner">Owner</option>
                             </select>

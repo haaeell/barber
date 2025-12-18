@@ -19,15 +19,15 @@ class BookingController extends Controller
         $carbon = Carbon::parse($date);
 
         $weekOfMonth = $carbon->weekOfMonth;     // 1–5
-        $weekNumber  = (($weekOfMonth - 1) % 4) + 1; // normalize ke 1–4
-        $day         = strtolower($carbon->format('l')); // monday, dst
+        $weekNumber = (($weekOfMonth - 1) % 4) + 1; // normalize ke 1–4
+        $day = strtolower($carbon->format('l')); // monday, dst
 
         return [$weekNumber, $day];
     }
     public function create()
     {
         return view('booking.create', [
-            'barbers'  => collect(),
+            'barbers' => collect(),
             'services' => Service::all(),
         ]);
     }
@@ -60,7 +60,7 @@ class BookingController extends Controller
     {
         $request->validate([
             'barber_id' => 'required|exists:barbers,id',
-            'date'      => 'required|date',
+            'date' => 'required|date',
         ]);
 
         [$weekNumber, $day] = $this->resolveWeekAndDay($request->date);
@@ -82,7 +82,7 @@ class BookingController extends Controller
            1. SLOT PER 1 JAM
         ========================= */
         $start = Carbon::parse($shift->start_time)->minute(0);
-        $end   = Carbon::parse($shift->end_time);
+        $end = Carbon::parse($shift->end_time);
 
         $slots = [];
         $cursor = $start->copy();
@@ -105,7 +105,7 @@ class BookingController extends Controller
             ->values();
 
         return response()->json([
-            'allSlots'  => $slots,
+            'allSlots' => $slots,
             'bookedSlots' => $booked,
         ]);
     }
@@ -119,22 +119,42 @@ class BookingController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'barber_id'   => 'required|exists:barbers,id',
+            'barber_id' => 'required|exists:barbers,id',
             'service_ids' => 'required|array|min:1',
-            'date'        => 'required|date',
-            'time'        => 'required',
+            'service_ids.*' => 'exists:services,id',
+            'date' => 'required|date',
+            'time' => 'required',
         ]);
 
-        $barber   = Barber::findOrFail($request->barber_id);
+        $barber = Barber::findOrFail($request->barber_id);
         $services = Service::whereIn('id', $request->service_ids)->get();
 
-        $totalDuration     = $services->sum('duration');
-        $totalServicePrice = $services->sum('price');
+        $totalDuration = 0;
+        $totalPrice = 0;
+        $hasHaircut = false;
+
+        // =========================
+        // HITUNG HARGA & DURASI
+        // =========================
+        foreach ($services as $service) {
+            $totalDuration += $service->duration;
+
+            if (strtolower($service->name) === 'haircut') {
+                // HAIRCUT → IKUT BARBER
+                $totalPrice += $barber->price;
+                $hasHaircut = true;
+            } else {
+                // SERVICE LAIN
+                $totalPrice += $service->price;
+            }
+        }
 
         $startTime = Carbon::parse($request->time);
-        $endTime   = $startTime->copy()->addMinutes($totalDuration);
+        $endTime = $startTime->copy()->addMinutes($totalDuration);
 
-        // cek bentrok
+        // =========================
+        // CEK BENTROK
+        // =========================
         $existing = Booking::with('services')
             ->where('barber_id', $barber->id)
             ->where('date', $request->date)
@@ -142,37 +162,53 @@ class BookingController extends Controller
 
         foreach ($existing as $b) {
             $bStart = Carbon::parse($b->time);
-            $bEnd   = $bStart->copy()->addMinutes($b->services->sum('duration'));
+            $bEnd = $bStart->copy()->addMinutes(
+                $b->services->sum('duration')
+            );
 
             if ($startTime < $bEnd && $endTime > $bStart) {
                 return back()->with('error', 'Waktu bentrok dengan booking lain');
             }
         }
 
+        // =========================
+        // SIMPAN BOOKING
+        // =========================
+        $adminFee = 5000;
+
         $booking = Booking::create([
             'booking_code' => 'BOOK-' . strtoupper(uniqid()),
-            'user_id'      => auth()->id(),
-            'barber_id'    => $barber->id,
-            'date'         => $request->date,
-            'time'         => $startTime,
-            'barber_price' => $barber->price,
-            'service_price' => $totalServicePrice,
-            'total_price'  => $totalServicePrice + $barber->price,
-            'status'       => 'pending',
+            'user_id' => auth()->id(),
+            'barber_id' => $barber->id,
+            'date' => $request->date,
+            'time' => $startTime,
+
+            // barber_price cuma info
+            'barber_price' => $hasHaircut ? $barber->price : 0,
+
+            'service_price' => $totalPrice,
+            'total_price' => $totalPrice + $adminFee,
+            'status' => 'pending',
         ]);
 
+        // =========================
+        // SIMPAN DETAIL SERVICE
+        // =========================
         foreach ($services as $service) {
             BookingService::create([
                 'booking_id' => $booking->id,
                 'service_id' => $service->id,
-                'price'      => $service->price,
-                'duration'   => $service->duration,
+                'price' => strtolower($service->name) === 'haircut'
+                    ? $barber->price
+                    : $service->price,
+                'duration' => $service->duration,
             ]);
         }
 
         return redirect()->route('booking.history')
             ->with('success', 'Booking berhasil dibuat');
     }
+
 
     public function history()
     {
