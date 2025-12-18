@@ -5,8 +5,8 @@
 
     <style>
         /* ===========================
-                                                                       WIZARD PROGRESS
-                                                                    =========================== */
+                                                                                                                           WIZARD PROGRESS
+                                                                                                                        =========================== */
         .wizard-container {
             display: flex;
             justify-content: space-between;
@@ -67,8 +67,8 @@
         }
 
         /* ---------------------------
-                                                                            PAGE ANIMATION SLIDE
-                                                                        ---------------------------- */
+                                                                                                                                PAGE ANIMATION SLIDE
+                                                                                                                            ---------------------------- */
         .step-page {
             display: none;
             animation-duration: 0.4s;
@@ -111,8 +111,8 @@
         }
 
         /* ===========================
-                                                                       CARD STYLE
-                                                                    =========================== */
+                                                                                                                           CARD STYLE
+                                                                                                                        =========================== */
         .barber-card,
         .service-card {
             border-radius: 12px;
@@ -165,6 +165,9 @@
 
         {{-- STEP 2 : BARBER --}}
         <div id="step2" class="step-page">
+            <button class="btn btn-outline-secondary my-3" onclick="goBack(1)">
+                ← Kembali
+            </button>
             <h3>Pilih Kapster</h3>
             <p class="text-muted mb-3">Pilih kapster yang tersedia.</p>
 
@@ -176,6 +179,9 @@
 
         {{-- STEP 3 : SERVICE --}}
         <div id="step3" class="step-page">
+            <button class="btn btn-outline-secondary my-3" onclick="goBack(2)">
+                ← Kembali
+            </button>
             <h3>Pilih Service</h3>
             <p class="text-muted mb-3">Anda bisa memilih lebih dari satu layanan.</p>
 
@@ -209,6 +215,9 @@
 
         {{-- STEP 4 : JAM --}}
         <div id="step4" class="step-page" style="display:none">
+            <button class="btn btn-outline-secondary my-3" onclick="goBack(3)">
+                ← Kembali
+            </button>
             <h3>Pilih Jam</h3>
 
             <div id="slotContainer" class="d-flex flex-wrap"></div>
@@ -216,6 +225,10 @@
 
         {{-- STEP 5 : KONFIRMASI --}}
         <div id="step5" class="step-page" style="display:none">
+
+            <button type="button" class="btn btn-outline-secondary my-3" onclick="goBack(4)">
+                ← Kembali
+            </button>
             <h4>Konfirmasi Booking</h4>
 
             <div class="card p-3">
@@ -439,6 +452,10 @@
                 document.getElementById("nav" + i).classList.toggle("active", i === n);
                 if (i < n) document.getElementById("nav" + i).classList.add("completed");
             }
+        }
+
+        function goBack(step) {
+            showStep(step);
         }
     </script>
 @endsection
