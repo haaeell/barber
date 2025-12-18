@@ -11,6 +11,7 @@ use App\Models\Barber;
 use App\Models\Service;
 use App\Models\Booking;
 use App\Models\BarberShift;
+use App\Models\BookingService;
 use App\Models\Review;
 
 class DatabaseSeeder extends Seeder
@@ -186,30 +187,42 @@ class DatabaseSeeder extends Seeder
     private function createDummyBookings()
     {
         $customers = User::where('role', 'customer')->get();
-        $barbers = Barber::all();
-        $services = Service::all();
+        $barbers   = Barber::all();
+        $services  = Service::all();
 
         foreach ($customers as $customer) {
 
             $barber = $barbers->random();
-            $service = $services->random();
 
-            Booking::create([
-                'booking_code'   => strtoupper(Str::random(6)),
-                'user_id'        => $customer->id,
-                'barber_id'      => $barber->id,
-                'service_id'     => $service->id,
-                'date'           => now()->addDays(rand(0, 3))->format('Y-m-d'),
-                'time'           => rand(9, 17) . ':00:00',
-                'status'         => 'confirmed',
-                'payment_method' => 'cash',
-                'payment_status' => 'paid',
+            // ambil 1–3 service random
+            $selectedServices = $services->random(rand(1, 3));
 
-                // FIX SESUAI MIGRATION
-                'service_price'  => $service->price,
-                'barber_price'   => $barber->price,
-                'total_price'    => $service->price + $barber->price,
+            $totalDuration     = $selectedServices->sum('duration');
+            $totalServicePrice = $selectedServices->sum('price');
+
+            $date      = now()->addDays(rand(0, 3))->format('Y-m-d');
+            $startTime = Carbon::createFromTime(rand(9, 16), 0, 0);
+
+            $booking = Booking::create([
+                'booking_code'  => 'BOOK-' . strtoupper(uniqid()),
+                'user_id'       => $customer->id,
+                'barber_id'     => $barber->id,
+                'date'          => $date,
+                'time'          => $startTime,
+                'barber_price'  => $barber->price,
+                'service_price' => $totalServicePrice,
+                'total_price'   => $totalServicePrice + $barber->price,
+                'status'        => 'confirmed',
             ]);
+
+            foreach ($selectedServices as $service) {
+                BookingService::create([
+                    'booking_id' => $booking->id,
+                    'service_id' => $service->id,
+                    'price'      => $service->price,
+                    'duration'   => $service->duration,
+                ]);
+            }
         }
     }
 
