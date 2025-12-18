@@ -81,10 +81,12 @@
                                 @endif
                             </form>
 
-                            <button class="btn btn-warning btn-sm mt-2"
-                                onclick="openServiceModal({{ $b->id }}, @json($b->services->pluck('service_id')))">
-                                Edit Service
-                            </button>
+                            @if (!in_array($b->status, ['completed', 'canceled']))
+                                <button class="btn btn-warning btn-sm mt-2"
+                                    onclick="openServiceModal({{ $b->id }}, @json($b->services->pluck('service_id')))">
+                                    Edit Service
+                                </button>
+                            @endif
                         </td>
                     </tr>
                 @empty
