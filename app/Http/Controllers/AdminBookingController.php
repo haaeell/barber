@@ -180,13 +180,13 @@ class AdminBookingController extends Controller
             'service_ids.*' => 'exists:services,id',
         ]);
 
-        $booking = Booking::with(['services', 'barber'])->findOrFail($request->booking_id);
+        $booking = Booking::with(['services.service', 'barber'])
+            ->findOrFail($request->booking_id);
 
         if ($booking->status === 'completed') {
             return back()->with('error', 'Booking sudah selesai, tidak bisa diubah.');
         }
 
-        // hapus service lama
         $booking->services()->delete();
 
         $totalServicePrice = 0;
@@ -199,25 +199,23 @@ class AdminBookingController extends Controller
             if (strtolower($service->name) === 'haircut') {
                 $hasHaircut = true;
             }
-            $price = $service->price;
 
             $booking->services()->create([
                 'service_id' => $service->id,
-                'price'      => $price,
+                'price'      => $service->price,
                 'duration'   => $service->duration,
             ]);
 
-            $totalServicePrice += $price;
+            $totalServicePrice += $service->price;
             $totalDuration     += $service->duration;
         }
 
         $barberPrice = $hasHaircut ? $booking->barber->price : 0;
 
-        $totalPrice = $hasHaircut
-            ? ($barberPrice + ($totalServicePrice - $booking->services
-                ->where('service.name', 'haircut')
-                ->sum('price')))
-            : $totalServicePrice;
+        $totalPrice = $totalServicePrice + $barberPrice;
+
+        $adminFee = $booking->source === 'online' ? 5000 : 0;
+        $totalPrice += $adminFee;
 
         $booking->update([
             'service_price' => $totalServicePrice,
