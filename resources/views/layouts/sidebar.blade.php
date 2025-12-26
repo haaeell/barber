@@ -8,7 +8,10 @@
         {{-- BRAND --}}
         <div class="w-100 mb-4 d-flex">
             <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="/">
-                Simply Haircut
+                <img src="https://simplyhaircut.id/storage/images/navbar/simplywith-outline.svg" width="40"
+                    alt="">
+                    Simply
+                Haircut
             </a>
         </div>
 

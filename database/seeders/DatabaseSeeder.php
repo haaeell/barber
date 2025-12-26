@@ -163,13 +163,6 @@ class DatabaseSeeder extends Seeder
                 'Jenggot / kumis (mulai 5k – 20k)',
             ],
             [
-                'Booking Fee',
-                'booking-fee.jpg',
-                5000,
-                5,
-                'Biaya booking',
-            ],
-            [
                 'Home Service',
                 'home-service.jpg',
                 75000,

@@ -110,12 +110,6 @@ class BookingController extends Controller
         ]);
     }
 
-
-
-
-    /* =============================
-        STORE
-    ============================== */
     public function store(Request $request)
     {
         $request->validate([
@@ -133,18 +127,13 @@ class BookingController extends Controller
         $totalPrice = 0;
         $hasHaircut = false;
 
-        // =========================
-        // HITUNG HARGA & DURASI
-        // =========================
         foreach ($services as $service) {
             $totalDuration += $service->duration;
 
             if (strtolower($service->name) === 'haircut') {
-                // HAIRCUT → IKUT BARBER
                 $totalPrice += $barber->price;
                 $hasHaircut = true;
             } else {
-                // SERVICE LAIN
                 $totalPrice += $service->price;
             }
         }
@@ -152,9 +141,6 @@ class BookingController extends Controller
         $startTime = Carbon::parse($request->time);
         $endTime = $startTime->copy()->addMinutes($totalDuration);
 
-        // =========================
-        // CEK BENTROK
-        // =========================
         $existing = Booking::with('services')
             ->where('barber_id', $barber->id)
             ->where('date', $request->date)
@@ -171,9 +157,6 @@ class BookingController extends Controller
             }
         }
 
-        // =========================
-        // SIMPAN BOOKING
-        // =========================
         $adminFee = 5000;
 
         $booking = Booking::create([
@@ -182,18 +165,12 @@ class BookingController extends Controller
             'barber_id' => $barber->id,
             'date' => $request->date,
             'time' => $startTime,
-
-            // barber_price cuma info
             'barber_price' => $hasHaircut ? $barber->price : 0,
-
             'service_price' => $totalPrice,
             'total_price' => $totalPrice + $adminFee,
             'status' => 'pending',
         ]);
 
-        // =========================
-        // SIMPAN DETAIL SERVICE
-        // =========================
         foreach ($services as $service) {
             BookingService::create([
                 'booking_id' => $booking->id,
@@ -214,6 +191,15 @@ class BookingController extends Controller
     {
         $bookings = Booking::with(['barber.user', 'service'])
             ->where('user_id', auth()->id())
+            ->orderByRaw("
+                CASE status
+                    WHEN 'pending' THEN 1
+                    WHEN 'confirmed' THEN 2
+                    WHEN 'completed' THEN 3
+                    WHEN 'canceled' THEN 4
+                    ELSE 5
+                END
+            ")
             ->orderBy('date', 'desc')
             ->orderBy('time', 'desc')
             ->get();

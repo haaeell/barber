@@ -325,7 +325,7 @@
                 language: {
                     emptyTable: "Tidak ada data"
                 },
-                dom: 'Bfrtip',
+                dom: 'frtip',
                 buttons: [{
                     extend: 'excelHtml5',
                     text: 'Export Excel',

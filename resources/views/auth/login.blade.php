@@ -58,7 +58,8 @@
 
     <div class="login-box text-center">
 
-        <img src="logo.png" onerror="this.outerHTML='<div class=\'logo\'></div>'" class="logo" alt="Logo">
+        <img src="https://simplyhaircut.id/storage/images/navbar/simplywith-outline.svg"
+            onerror="this.outerHTML='<div class=\'logo\'></div>'" class="logo" alt="Logo">
 
         <h4 class="fw-bold">Hi, Welcome Back</h4>
         <p class="text-muted">Enter your credentials to continue</p>

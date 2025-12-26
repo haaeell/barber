@@ -220,7 +220,7 @@
         <div class="container position-relative">
             <h2 class="fw-bold mb-3">Want to cut your hair?</h2>
             @auth
-                <a href="{{ route('booking.index') }}" class="btn btn-success px-4">
+                <a href="{{ route('booking.create') }}" class="btn btn-success px-4">
                     Book Now →
                 </a>
             @else
