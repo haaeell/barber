@@ -130,14 +130,14 @@
                     </span>
 
                     {{-- REVIEW --}}
-                    @if ($booking->status === 'completed' && !$booking->review)
+                    {{-- @if ($booking->status === 'completed' && !$booking->review)
                         <div class="mt-3">
                             <a href="{{ route('booking.review', $booking->id) }}"
                                 class="btn btn-sm btn-primary action-btn">
                                 Beri Review
                             </a>
                         </div>
-                    @endif
+                    @endif --}}
 
                 </div>
             </div>
