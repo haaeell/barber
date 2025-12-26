@@ -14,21 +14,22 @@ class AdminBookingController extends Controller
     {
         $user = auth()->user();
 
-        $status = $request->status;
-        $barber = $request->barber;
+        $status  = $request->status;
+        $barber  = $request->barber;
         $service = $request->service;
-        $search = $request->search;
-        $from = $request->from;
-        $to = $request->to;
+        $search  = $request->search;
+        $from    = $request->from;
+        $to      = $request->to;
 
-        $bookings = Booking::with(['barber.user', 'service', 'user'])
+        $today = Carbon::today()->format('Y-m-d');
+
+        $bookings = Booking::with(['barber.user', 'services.service', 'user'])
 
             // ================= ROLE CHECK =================
             ->when($user->role === 'barber', function ($q) use ($user) {
                 if ($user->barber) {
                     $q->where('barber_id', $user->barber->id);
                 } else {
-                    // safety: admin tanpa barber → kosong
                     $q->whereRaw('1=0');
                 }
             })
@@ -41,22 +42,41 @@ class AdminBookingController extends Controller
                 fn($q) => $q->where('barber_id', $barber)
             )
 
-            ->when($service, fn($q) => $q->where('service_id', $service))
+            ->when($service, fn($q) => $q->whereHas(
+                'services',
+                fn($s) =>
+                $s->where('service_id', $service)
+            ))
 
             ->when($search, function ($q) use ($search) {
                 $q->whereHas('user', fn($u) => $u->where('name', 'like', "%$search%"))
-                    ->orWhereHas('barber.user', fn($b) => $b->where('name', 'like', "%$search%"))
-                    ->orWhereHas('service', fn($s) => $s->where('name', 'like', "%$search%"));
+                    ->orWhereHas('barber.user', fn($b) => $b->where('name', 'like', "%$search%"));
             })
 
-            ->when($from && $to, fn($q) => $q->whereBetween('date', [$from, $to]))
+            // ================= FILTER TANGGAL =================
+            ->when(
+                $from && $to,
+                fn($q) => $q->whereBetween('date', [$from, $to])
+            )
+
+            // ================= DEFAULT WALK-IN HARI INI =================
+            ->when(
+                !($from && $to),
+                fn($q) => $q->where(function ($w) use ($today) {
+                    $w->where('source', 'online')
+                        ->orWhere(function ($wi) use ($today) {
+                            $wi->where('source', 'walk_in')
+                                ->whereDate('date', $today);
+                        });
+                })
+            )
 
             ->orderByRaw("
-            CASE
-                WHEN status IN ('completed', 'canceled') THEN 1
-                ELSE 0
-            END
-        ")
+                CASE 
+                    WHEN status IN ('completed', 'canceled') THEN 1
+                    ELSE 0
+                END
+            ")
             ->orderBy('date', 'asc')
             ->orderBy('time', 'asc')
             ->get();
