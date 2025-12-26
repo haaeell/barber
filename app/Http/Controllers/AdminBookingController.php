@@ -135,14 +135,14 @@ class AdminBookingController extends Controller
         $isHaircut = strtolower($service->name) === 'haircut';
 
         $servicePrice = $isHaircut
-            ? $barber->price       // haircut ikut barber
-            : $service->price;     // selain haircut
+            ? $barber->price
+            : $service->price;
 
         $barberPrice = $isHaircut
-            ? $barber->price       // cuma info
+            ? $barber->price
             : 0;
 
-        $totalPrice = $servicePrice; // barber tidak nambah kalau non-haircut
+        $totalPrice = $servicePrice;
 
         $booking = Booking::create([
             'booking_code' => 'WI-' . now()->format('YmdHis'),
