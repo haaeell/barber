@@ -112,6 +112,14 @@ class DatabaseSeeder extends Seeder
     private function createServices()
     {
         $services = [
+
+            [
+                'Haircut',
+                'k-perm.jpg',
+                0,
+                30,
+                'Pijat kepala',
+            ],
             [
                 'Bleaching Coloring',
                 'bleaching.jpg',
@@ -181,13 +189,6 @@ class DatabaseSeeder extends Seeder
                 250000,
                 90,
                 'Rambut bergelombang',
-            ],
-            [
-                'Haircut',
-                'k-perm.jpg',
-                0,
-                30,
-                'Pijat kepala',
             ],
         ];
 

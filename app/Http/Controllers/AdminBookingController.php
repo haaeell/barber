@@ -155,12 +155,12 @@ class AdminBookingController extends Controller
     public function updateServices(Request $request)
     {
         $request->validate([
-            'booking_id' => 'required|exists:bookings,id',
-            'service_ids' => 'required|array|min:1',
+            'booking_id'    => 'required|exists:bookings,id',
+            'service_ids'   => 'required|array|min:1',
             'service_ids.*' => 'exists:services,id',
         ]);
 
-        $booking = Booking::with('services')->findOrFail($request->booking_id);
+        $booking = Booking::with(['services', 'barber'])->findOrFail($request->booking_id);
 
         if ($booking->status === 'completed') {
             return back()->with('error', 'Booking sudah selesai, tidak bisa diubah.');
@@ -170,29 +170,44 @@ class AdminBookingController extends Controller
         $booking->services()->delete();
 
         $totalServicePrice = 0;
-        $totalDuration = 0;
+        $totalDuration     = 0;
+        $hasHaircut        = false;
 
         foreach ($request->service_ids as $serviceId) {
             $service = Service::findOrFail($serviceId);
 
+            if (strtolower($service->name) === 'haircut') {
+                $hasHaircut = true;
+            }
+            $price = $service->price;
+
             $booking->services()->create([
                 'service_id' => $service->id,
-                'price' => $service->price,
-                'duration' => $service->duration,
+                'price'      => $price,
+                'duration'   => $service->duration,
             ]);
 
-            $totalServicePrice += $service->price;
-            $totalDuration += $service->duration;
+            $totalServicePrice += $price;
+            $totalDuration     += $service->duration;
         }
 
-        // update total
+        $barberPrice = $hasHaircut ? $booking->barber->price : 0;
+
+        $totalPrice = $hasHaircut
+            ? ($barberPrice + ($totalServicePrice - $booking->services
+                ->where('service.name', 'haircut')
+                ->sum('price')))
+            : $totalServicePrice;
+
         $booking->update([
             'service_price' => $totalServicePrice,
-            'total_price' => $totalServicePrice + $booking->barber_price,
+            'barber_price'  => $barberPrice,
+            'total_price'   => $totalPrice,
         ]);
 
-        return back()->with('success', 'Service booking berhasil diperbarui.');
+        return back()->with('success', 'Service booking berhasil diperbarui dan harga disesuaikan.');
     }
+
 
     public function changeBarber(Request $request)
     {
@@ -209,7 +224,6 @@ class AdminBookingController extends Controller
 
         $newBarber = Barber::findOrFail($request->barber_id);
 
-        // cek apakah ada service Haircut
         $hasHaircut = $booking->services->contains(function ($svc) {
             return strtolower($svc->service->name) === 'haircut';
         });
