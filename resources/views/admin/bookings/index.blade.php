@@ -16,7 +16,7 @@
 @section('content')
     <div class="container-fluid">
 
-        {{-- ================= HEADER ================= --}}
+        {{-- HEADER --}}
         <div class="card mb-3">
             <div class="card-body d-flex justify-content-between align-items-center">
                 <h3 class="fw-bold mb-0">Data Booking & Order</h3>
@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        {{-- ================= FILTER ================= --}}
+        {{-- FILTER --}}
         <div class="card p-3 shadow-sm mb-4">
             <form method="GET" class="row">
                 <div class="col-md-2 mb-2">
@@ -64,12 +64,6 @@
                     <input type="date" name="to" class="form-control" value="{{ request('to') }}">
                 </div>
 
-                <div class="col-md-2 mb-2">
-                    <label>Cari</label>
-                    <input type="text" name="search" class="form-control" placeholder="Customer / Barber"
-                        value="{{ request('search') }}">
-                </div>
-
                 <div class="col-md-2 mb-2 d-flex align-items-end">
                     <button class="btn btn-primary w-100">
                         <i class="fe fe-search"></i> Filter
@@ -78,7 +72,7 @@
             </form>
         </div>
 
-        {{-- ================= TABS ================= --}}
+        {{-- TABS --}}
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
                 <button class="nav-link active" id="tab-online-btn" data-toggle="tab" data-target="#tab-online">
@@ -95,23 +89,36 @@
 
         <div class="tab-content">
 
-            {{-- ================= TAB ONLINE ================= --}}
+            {{-- TAB ONLINE --}}
             <div class="tab-pane fade show active" id="tab-online">
+                <div class="d-flex justify-content-end mb-2">
+                    <button class="btn btn-success btn-sm export-excel" data-target="table-online">
+                        Export Excel
+                    </button>
+                </div>
+
                 @include('admin.bookings._table', [
                     'rows' => $bookings->where('source', 'online'),
+                    'tableId' => 'table-online',
                 ])
             </div>
 
-            {{-- ================= TAB WALK IN ================= --}}
+            {{-- TAB WALK IN --}}
             <div class="tab-pane fade" id="tab-walkin">
+                <div class="d-flex justify-content-end mb-2">
+                    <button class="btn btn-success btn-sm export-excel" data-target="table-walkin">
+                        Export Excel
+                    </button>
+                </div>
+
                 @include('admin.bookings._table', [
                     'rows' => $bookings->where('source', 'walk_in'),
+                    'tableId' => 'table-walkin',
                 ])
             </div>
 
         </div>
     </div>
-
     {{-- ================= MODAL WALK IN ================= --}}
     <div class="modal fade" id="modalWalkIn" tabindex="-1">
         <div class="modal-dialog">
@@ -218,6 +225,45 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalChangeBarber" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <form method="POST" action="{{ route('admin.bookings.changeBarber') }}" class="modal-content">
+                @csrf
+
+                <input type="hidden" name="booking_id" id="change_barber_booking_id">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Ganti Kapster</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div class="modal-body">
+                    <label>Pilih Kapster</label>
+                    <select name="barber_id" class="form-control" required>
+                        @foreach ($barbers as $barber)
+                            <option value="{{ $barber->id }}">
+                                {{ $barber->user->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary w-100">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap4.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
     <script>
         const TAB_KEY = 'booking_active_tab';
 
@@ -256,5 +302,57 @@
 
             $('#modalEditService').modal('show');
         }
+
+        function openBarberModal(bookingId, currentBarberId) {
+            document.getElementById('change_barber_booking_id').value = bookingId;
+
+            const select = document.querySelector('#modalChangeBarber select[name="barber_id"]');
+            select.value = currentBarberId;
+
+            $('#modalChangeBarber').modal('show');
+        }
+
+        const tables = {};
+
+        $('.datatable').each(function() {
+            const id = this.id;
+
+            tables[id] = $(this).DataTable({
+                paging: true,
+                ordering: true,
+                searching: true,
+                responsive: true,
+                language: {
+                    emptyTable: "Tidak ada data"
+                },
+                dom: 'Bfrtip',
+                buttons: [{
+                    extend: 'excelHtml5',
+                    text: 'Export Excel',
+                    title: 'Data Booking',
+                    exportOptions: {
+                        columns: ':not(:last-child)'
+                    }
+                }]
+            });
+        });
+
+        $('.export-excel').on('click', function() {
+            const tableId = $(this).data('target');
+
+            if (!tables[tableId]) {
+                console.error('DataTable not found:', tableId);
+                return;
+            }
+
+            tables[tableId].buttons('.buttons-excel').trigger();
+        });
+
+        $('button[data-toggle="tab"]').on('shown.bs.tab', function() {
+            $.fn.dataTable.tables({
+                visible: true,
+                api: true
+            }).columns.adjust();
+        });
     </script>
-@endsection
+@endpush

@@ -193,4 +193,36 @@ class AdminBookingController extends Controller
 
         return back()->with('success', 'Service booking berhasil diperbarui.');
     }
+
+    public function changeBarber(Request $request)
+    {
+        $request->validate([
+            'booking_id' => 'required|exists:bookings,id',
+            'barber_id'  => 'required|exists:barbers,id',
+        ]);
+
+        $booking = Booking::with(['services.service'])->findOrFail($request->booking_id);
+
+        if (in_array($booking->status, ['completed', 'canceled'])) {
+            return back()->with('error', 'Booking tidak bisa diubah');
+        }
+
+        $newBarber = Barber::findOrFail($request->barber_id);
+
+        // cek apakah ada service Haircut
+        $hasHaircut = $booking->services->contains(function ($svc) {
+            return strtolower($svc->service->name) === 'haircut';
+        });
+
+        $servicePrice = $booking->service_price;
+        $barberPrice  = $hasHaircut ? $newBarber->price : 0;
+
+        $booking->update([
+            'barber_id'    => $newBarber->id,
+            'barber_price' => $barberPrice,
+            'total_price'  => $servicePrice + $barberPrice,
+        ]);
+
+        return back()->with('success', 'Kapster berhasil diganti dan harga diperbarui');
+    }
 }

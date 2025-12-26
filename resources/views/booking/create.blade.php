@@ -5,8 +5,8 @@
 
     <style>
         /* ===========================
-                                                                                                                           WIZARD PROGRESS
-                                                                                                                        =========================== */
+                                                                                                                                                   WIZARD PROGRESS
+                                                                                                                                                =========================== */
         .wizard-container {
             display: flex;
             justify-content: space-between;
@@ -67,8 +67,8 @@
         }
 
         /* ---------------------------
-                                                                                                                                PAGE ANIMATION SLIDE
-                                                                                                                            ---------------------------- */
+                                                                                                                                                        PAGE ANIMATION SLIDE
+                                                                                                                                                    ---------------------------- */
         .step-page {
             display: none;
             animation-duration: 0.4s;
@@ -111,8 +111,8 @@
         }
 
         /* ===========================
-                                                                                                                           CARD STYLE
-                                                                                                                        =========================== */
+                                                                                                                                                   CARD STYLE
+                                                                                                                                                =========================== */
         .barber-card,
         .service-card {
             border-radius: 12px;
@@ -190,7 +190,8 @@
                     <div class="col-md-4 mb-3">
                         <div class="service-card p-2 shadow-sm" data-id="{{ $s->id }}"
                             data-name="{{ $s->name }}" data-price="{{ $s->price }}"
-                            data-duration="{{ $s->duration }}">
+                            data-duration="{{ $s->duration }}"
+                            data-type="{{ strtolower($s->name) === 'haircut' ? 'haircut' : 'normal' }}">
 
                             <img src="{{ asset('storage/' . ($s->image ?? 'default-service.jpg')) }}"
                                 class="w-100 rounded mb-2" style="height:160px;object-fit:cover;">
@@ -200,8 +201,13 @@
                                 {{ $s->duration }} menit
                             </p>
                             <p class="text-center text-muted">
-                                Rp {{ number_format($s->price) }}
+                                @if (strtolower($s->name) === 'haircut')
+                                    Mengikuti harga kapster
+                                @else
+                                    Rp {{ number_format($s->price) }}
+                                @endif
                             </p>
+
                         </div>
                     </div>
                 @endforeach
@@ -329,20 +335,35 @@
         /* =====================
            BARBER
         ===================== */
+        let barberPrice = 0;
+
         document.addEventListener("click", e => {
-            if (e.target.closest(".barber-card")) {
-                document.querySelectorAll(".barber-card").forEach(c => c.classList.remove("selected"));
-                const card = e.target.closest(".barber-card");
-                card.classList.add("selected");
+            const card = e.target.closest(".barber-card");
+            if (!card) return;
 
-                selectedBarber = card.dataset.id;
-                document.getElementById("formBarber").value = selectedBarber;
-                document.getElementById("sumBarber").innerText = card.dataset.name;
-                totalPrice = parseInt(card.dataset.price);
+            document.querySelectorAll(".barber-card")
+                .forEach(c => c.classList.remove("selected"));
 
-                showStep(3);
-            }
+            card.classList.add("selected");
+
+            selectedBarber = card.dataset.id;
+            barberPrice = parseInt(card.dataset.price);
+
+            document.getElementById("formBarber").value = selectedBarber;
+            document.getElementById("sumBarber").innerText = card.dataset.name;
+
+            selectedServices = [];
+            totalPrice = 0;
+
+            document.querySelectorAll(".service-card")
+                .forEach(c => c.classList.remove("selected"));
+
+            document.getElementById("sumService").innerText = "-";
+            document.getElementById("sumTotal").innerText = "0";
+
+            showStep(3);
         });
+
 
         /* =====================
            SERVICE
@@ -350,16 +371,28 @@
         document.querySelectorAll(".service-card").forEach(card => {
             card.onclick = () => {
                 const id = card.dataset.id;
-                const price = parseInt(card.dataset.price);
+                const type = card.dataset.type;
+                const servicePrice = parseInt(card.dataset.price || 0);
 
                 if (selectedServices.includes(id)) {
                     selectedServices = selectedServices.filter(s => s !== id);
-                    totalPrice -= price;
                     card.classList.remove("selected");
+
+                    if (type === 'haircut') {
+                        totalPrice -= barberPrice;
+                    } else {
+                        totalPrice -= servicePrice;
+                    }
+
                 } else {
                     selectedServices.push(id);
-                    totalPrice += price;
                     card.classList.add("selected");
+
+                    if (type === 'haircut') {
+                        totalPrice += barberPrice;
+                    } else {
+                        totalPrice += servicePrice;
+                    }
                 }
 
                 document.getElementById("sumService").innerText =
@@ -369,6 +402,7 @@
                     totalPrice.toLocaleString();
             };
         });
+
 
 
         document.getElementById("nextToSlot").onclick = () => {

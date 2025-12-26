@@ -220,4 +220,21 @@ class BookingController extends Controller
 
         return view('booking.history', compact('bookings'));
     }
+
+    public function cancel(Booking $booking)
+    {
+        if ($booking->user_id !== auth()->id()) {
+            abort(403, 'Tidak diizinkan');
+        }
+
+        if (!in_array($booking->status, ['pending', 'confirmed'])) {
+            return back()->with('error', 'Booking tidak dapat dibatalkan');
+        }
+
+        $booking->update([
+            'status' => 'canceled',
+        ]);
+
+        return back()->with('success', 'Booking berhasil dibatalkan');
+    }
 }

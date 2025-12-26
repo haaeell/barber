@@ -25,8 +25,6 @@ class DatabaseSeeder extends Seeder
         $this->createBarbers();
         $this->createServices();
         $this->createBarberWeeklyShifts();
-        $this->createDummyBookings();
-        $this->createDummyReviews();
     }
 
     /* -------------------------------------------------------------------------- */
@@ -79,29 +77,34 @@ class DatabaseSeeder extends Seeder
     private function createBarbers()
     {
         $barbers = [
-            ['Evan Barber', 'evan@barbershop.com', 'Fade Specialist', 10000],
-            ['Rio Barber', 'rio@barbershop.com', 'Classic Cut', 15000],
-            ['Dion Barber', 'dion@barbershop.com', 'Kids Cut', 8000],
+            ['BUDI',   'budi@barbershop.com',   'Senior Barber', 55000],
+            ['DAFI',   'dafi@barbershop.com',   'Barber',        45000],
+            ['ABED',   'abed@barbershop.com',   'Barber',        45000],
+            ['ADI',    'adi@barbershop.com',    'Barber',        45000],
+            ['ARI',    'ari@barbershop.com',    'Barber',        40000],
+            ['BIMBIM', 'bimbim@barbershop.com', 'Barber',        40000],
+            ['JATI',   'jati@barbershop.com',   'Junior Barber', 25000],
         ];
 
         foreach ($barbers as $index => $b) {
             $user = User::create([
-                'name' => $b[0],
-                'email' => $b[1],
-                'phone' => '0815000000' . ($index + 1),
+                'name'     => 'By ' . $b[0],
+                'email'    => $b[1],
+                'phone'    => '081600000' . ($index + 1),
                 'password' => Hash::make('password'),
-                'role' => 'barber',
+                'role'     => 'barber',
             ]);
 
             Barber::create([
-                'user_id' => $user->id,
-                'nickname' => explode(' ', $b[0])[0],
+                'user_id'    => $user->id,
+                'nickname'   => $b[0],
                 'speciality' => $b[2],
-                'is_active' => true,
-                'price' => $b[3], // Sesuai migration
+                'price'      => $b[3],
+                'is_active'  => true,
             ]);
         }
     }
+
 
     /* -------------------------------------------------------------------------- */
     /*  SERVICES                                                                  */
@@ -109,30 +112,97 @@ class DatabaseSeeder extends Seeder
     private function createServices()
     {
         $services = [
-            ['Classic Haircut', 'haircut.jpg', 30000, 30, 'Standard haircut for men'],
-            ['Premium Haircut', 'premium.jpg', 50000, 45, 'Premium style haircut'],
-            ['Kids Haircut', 'kids.jpg', 25000, 25, 'Haircut for kids under 12'],
-            ['Shaving', 'shaving.jpg', 20000, 20, 'Clean shaving service'],
-            ['Hair Color', 'color.jpg', 150000, 60, 'Full hair coloring service'],
+            [
+                'Bleaching Coloring',
+                'bleaching.jpg',
+                65000,
+                45,
+                'Pewarnaan rambut (harga per step)',
+            ],
+            [
+                'Hair Creambath',
+                'creambath.jpg',
+                40000,
+                30,
+                'Hairmask + pijat kepala 15 menit',
+            ],
+            [
+                'Long Hair',
+                'long-hair.jpg',
+                20000,
+                10,
+                'Tambahan untuk rambut lebih dari 15 cm',
+            ],
+            [
+                'Long Trim',
+                'long-trim.jpg',
+                10000,
+                10,
+                'Tambahan trim lebih dari 5 cm',
+            ],
+            [
+                'Washing',
+                'washing.jpg',
+                10000,
+                15,
+                'Keramas, vitamin, dan styling',
+            ],
+            [
+                'Shaving',
+                'shaving.jpg',
+                20000,
+                20,
+                'Jenggot / kumis (mulai 5k – 20k)',
+            ],
+            [
+                'Booking Fee',
+                'booking-fee.jpg',
+                5000,
+                5,
+                'Biaya booking',
+            ],
+            [
+                'Home Service',
+                'home-service.jpg',
+                75000,
+                0,
+                'Layanan panggilan ke rumah',
+            ],
+            [
+                'Curly Perm',
+                'curly-perm.jpg',
+                250000,
+                90,
+                'Keriting rambut',
+            ],
+            [
+                'K-Perm',
+                'k-perm.jpg',
+                250000,
+                90,
+                'Rambut bergelombang',
+            ],
+            [
+                'Haircut',
+                'k-perm.jpg',
+                0,
+                30,
+                'Pijat kepala',
+            ],
         ];
 
         foreach ($services as $s) {
             Service::create([
-                'name' => $s[0],
-                'image' => $s[1],
-                'price' => $s[2],
-                'duration' => $s[3],
+                'name'        => $s[0],
+                'image'       => $s[1],
+                'price'       => $s[2],
+                'duration'    => $s[3],
                 'description' => $s[4],
             ]);
         }
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*  WEEKLY BARBER SHIFTS                                                      */
-    /* -------------------------------------------------------------------------- */
-    /* -------------------------------------------------------------------------- */
-    /*  BARBER SHIFTS – 4 WEEK ROLLING                                             */
-    /* -------------------------------------------------------------------------- */
+
     private function createBarberWeeklyShifts()
     {
         $barbers = Barber::pluck('id')->values();
@@ -144,7 +214,6 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        // bersihin dulu biar aman saat re-seed
         BarberShift::truncate();
 
         $startTime = '09:00:00';
@@ -156,11 +225,6 @@ class DatabaseSeeder extends Seeder
         for ($week = 1; $week <= 4; $week++) {
 
             foreach ($days as $dayIndex => $day) {
-
-                /**
-                 * 1 barber libur per hari
-                 * Rolling adil tiap minggu
-                 */
                 $offIndex = ($dayIndex + ($week - 1)) % $totalBarbers;
                 $offBarberId = $barbers[$offIndex];
 
@@ -178,70 +242,6 @@ class DatabaseSeeder extends Seeder
                     ]);
                 }
             }
-        }
-    }
-
-
-    /* -------------------------------------------------------------------------- */
-    /*  DUMMY BOOKINGS (Fix untuk kolom baru)                                     */
-    /* -------------------------------------------------------------------------- */
-    private function createDummyBookings()
-    {
-        $customers = User::where('role', 'customer')->get();
-        $barbers   = Barber::all();
-        $services  = Service::all();
-
-        foreach ($customers as $customer) {
-
-            $barber = $barbers->random();
-
-            // ambil 1–3 service random
-            $selectedServices = $services->random(rand(1, 3));
-
-            $totalDuration     = $selectedServices->sum('duration');
-            $totalServicePrice = $selectedServices->sum('price');
-
-            $date      = now()->addDays(rand(0, 3))->format('Y-m-d');
-            $startTime = Carbon::createFromTime(rand(9, 16), 0, 0);
-
-            $booking = Booking::create([
-                'booking_code'  => 'BOOK-' . strtoupper(uniqid()),
-                'user_id'       => $customer->id,
-                'barber_id'     => $barber->id,
-                'date'          => $date,
-                'time'          => $startTime,
-                'barber_price'  => $barber->price,
-                'service_price' => $totalServicePrice,
-                'total_price'   => $totalServicePrice + $barber->price,
-                'status'        => 'confirmed',
-            ]);
-
-            foreach ($selectedServices as $service) {
-                BookingService::create([
-                    'booking_id' => $booking->id,
-                    'service_id' => $service->id,
-                    'price'      => $service->price,
-                    'duration'   => $service->duration,
-                ]);
-            }
-        }
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*  DUMMY REVIEWS                                                             */
-    /* -------------------------------------------------------------------------- */
-    private function createDummyReviews()
-    {
-        $bookings = Booking::all();
-
-        foreach ($bookings as $booking) {
-            Review::create([
-                'booking_id' => $booking->id,
-                'user_id'    => $booking->user_id,
-                'barber_id'  => $booking->barber_id,
-                'rating'     => rand(4, 5),
-                'comment'    => 'Great service! Recommended barber.',
-            ]);
         }
     }
 }

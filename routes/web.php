@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('welcome');
 });
 
 Auth::routes();
@@ -35,6 +35,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/booking/slots', [BookingController::class, 'getAvailableSlots']);
     Route::post('/booking/store', [BookingController::class, 'store'])->name('booking.store');
     Route::get('/booking/history', [BookingController::class, 'history'])->name('booking.history');
+    Route::patch('/booking/{booking}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');
 
     Route::post('/booking/barbers', [BookingController::class, 'getAvailableBarbers']);
 
@@ -46,6 +47,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.bookings.walkin');
     Route::post('/admin/bookings/update-services', [AdminBookingController::class, 'updateServices'])
         ->name('admin.bookings.updateServices');
+    Route::post('/admin/bookings/change-barber', [AdminBookingController::class, 'changeBarber'])
+        ->name('admin.bookings.changeBarber');
+
 
 
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
