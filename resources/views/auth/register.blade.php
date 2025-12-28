@@ -61,7 +61,8 @@
 
     <div class="register-box text-center">
 
-        <img src="logo.png" onerror="this.outerHTML='<div class=\'logo\'></div>'" class="logo" alt="Logo">
+        <img src="https://simplyhaircut.id/storage/images/navbar/simplywith-outline.svg"
+            onerror="this.outerHTML='<div class=\'logo\'></div>'" class="logo" alt="Logo">
 
         <h4 class="fw-bold">Sign Up</h4>
         <p class="text-muted">Enter your details and create account</p>
