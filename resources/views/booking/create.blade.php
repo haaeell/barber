@@ -5,8 +5,8 @@
 
     <style>
         /* ===========================
-                                                                                                                                                                       WIZARD PROGRESS
-                                                                                                                                                                    =========================== */
+                                                                                                                                                                               WIZARD PROGRESS
+                                                                                                                                                                            =========================== */
         .wizard-container {
             display: flex;
             justify-content: space-between;
@@ -67,8 +67,8 @@
         }
 
         /* ---------------------------
-                                                                                                                                                                            PAGE ANIMATION SLIDE
-                                                                                                                                                                        ---------------------------- */
+                                                                                                                                                                                    PAGE ANIMATION SLIDE
+                                                                                                                                                                                ---------------------------- */
         .step-page {
             display: none;
             animation-duration: 0.4s;
@@ -111,8 +111,8 @@
         }
 
         /* ===========================
-                                                                                                                                                                       CARD STYLE
-                                                                                                                                                                    =========================== */
+                                                                                                                                                                               CARD STYLE
+                                                                                                                                                                            =========================== */
         .barber-card,
         .service-card {
             border-radius: 12px;
@@ -325,7 +325,7 @@
                     }
 
                     barbers.forEach(b => {
-                        barberContainer.innerHTML += `
+                        container.innerHTML += `
         <div class="col-md-4 mb-3">
             <div class="barber-card p-2 shadow-sm"
                 data-id="${b.id}"
@@ -381,7 +381,7 @@
                 .forEach(c => c.classList.remove("selected"));
 
             document.getElementById("sumService").innerText = "-";
-            document.getElementById("sumTotal").innerText = "0";
+            document.getElementById("sumSubtotal").innerText = "0";
 
             showStep(3);
         });
@@ -420,7 +420,7 @@
                 document.getElementById("sumService").innerText =
                     selectedServices.length + " service dipilih";
 
-                document.getElementById("sumTotal").innerText =
+                document.getElementById("sumSubtotal").innerText =
                     totalPrice.toLocaleString();
             };
         });

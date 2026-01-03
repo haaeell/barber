@@ -42,49 +42,59 @@
                         </td>
                         <td>Rp {{ number_format($b->total_price) }}</td>
                         <td>
-                            <div class="text-nowrap">
-                                <form method="POST" action="{{ route('admin.bookings.updateStatus') }}"
-                                    class="d-inline">
-                                    @csrf
-                                    <input type="hidden" name="id" value="{{ $b->id }}">
+                            <div class="d-flex justify-content-between align-items-center text-nowrap">
 
-                                    @if ($b->status === 'pending')
-                                        <button name="status" value="confirmed"
-                                            class="btn btn-info btn-sm">Confirm</button>
-                                    @endif
+                                {{-- LEFT ACTIONS --}}
+                                <div>
+                                    <form method="POST" action="{{ route('admin.bookings.updateStatus') }}"
+                                        class="d-inline">
+                                        @csrf
+                                        <input type="hidden" name="id" value="{{ $b->id }}">
 
-                                    @if ($b->status === 'confirmed')
-                                        <button name="status" value="checkin"
-                                            class="btn btn-primary btn-sm">Check-in</button>
-                                    @endif
+                                        @if ($b->status === 'pending')
+                                            <button name="status" value="confirmed" class="btn btn-info btn-sm">
+                                                Confirm
+                                            </button>
+                                        @endif
 
-                                    @if ($b->status === 'checkin')
-                                        <button type="button" onclick="openPaymentModal({{ $b->id }})"
-                                            class="btn btn-success btn-sm">
-                                            Bayar
-                                        </button>
-                                    @endif
+                                        @if ($b->status === 'confirmed')
+                                            <button name="status" value="checkin" class="btn btn-primary btn-sm">
+                                                Check-in
+                                            </button>
+                                        @endif
+
+                                        @if ($b->status === 'checkin')
+                                            <button type="button" onclick="openPaymentModal({{ $b->id }})"
+                                                class="btn btn-success btn-sm">
+                                                Bayar
+                                            </button>
+                                        @endif
+                                    </form>
 
                                     @if (!in_array($b->status, ['completed', 'canceled']))
-                                        <button type="button" class="btn btn-danger btn-sm"
-                                            onclick="openCancelModal({{ $b->id }})">
-                                            Cancel
+                                        <button class="btn btn-warning btn-sm"
+                                            onclick="openServiceModal({{ $b->id }}, @json($b->services->pluck('service_id')))">
+                                            Edit Service
+                                        </button>
+
+                                        <button class="btn btn-secondary btn-sm"
+                                            onclick="openBarberModal({{ $b->id }}, {{ $b->barber_id }})">
+                                            Ganti Kapster
                                         </button>
                                     @endif
-                                </form>
+                                </div>
 
+                                {{-- RIGHT ACTION (CANCEL) --}}
                                 @if (!in_array($b->status, ['completed', 'canceled']))
-                                    <button class="btn btn-warning btn-sm"
-                                        onclick="openServiceModal({{ $b->id }}, @json($b->services->pluck('service_id')))">
-                                        Edit Service
-                                    </button>
-                                    <button class="btn btn-secondary btn-sm"
-                                        onclick="openBarberModal({{ $b->id }}, {{ $b->barber_id }})">
-                                        Ganti Kapster
+                                    <button type="button" class="btn btn-danger btn-sm ms-2"
+                                        onclick="openCancelModal({{ $b->id }})">
+                                        Cancel
                                     </button>
                                 @endif
+
                             </div>
                         </td>
+
                     </tr>
                 @endforeach
             </tbody>
