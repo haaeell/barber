@@ -256,6 +256,38 @@
             </form>
         </div>
     </div>
+
+    {{-- ================= MODAL CANCEL ================= --}}
+    <div class="modal fade" id="cancelModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <form method="POST" action="{{ route('admin.bookings.updateStatus') }}" class="modal-content">
+                @csrf
+                <input type="hidden" name="id" id="cancel_booking_id">
+                <input type="hidden" name="status" value="canceled">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Konfirmasi Pembatalan</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+
+                <div class="modal-body text-center">
+                    <p class="fw-bold mb-1">Yakin ingin membatalkan booking ini?</p>
+                    <small class="text-muted">
+                        Status akan berubah menjadi <b>CANCEL</b> dan tidak bisa dikembalikan.
+                    </small>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-danger">
+                        Ya, Batalkan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -311,6 +343,12 @@
 
             $('#modalChangeBarber').modal('show');
         }
+
+        function openCancelModal(bookingId) {
+            document.getElementById('cancel_booking_id').value = bookingId;
+            $('#cancelModal').modal('show');
+        }
+
 
         const tables = {};
 

@@ -66,7 +66,8 @@
                                     @endif
 
                                     @if (!in_array($b->status, ['completed', 'canceled']))
-                                        <button name="status" value="canceled" class="btn btn-danger btn-sm">
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                            onclick="openCancelModal({{ $b->id }})">
                                             Cancel
                                         </button>
                                     @endif

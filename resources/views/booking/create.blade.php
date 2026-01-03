@@ -5,8 +5,8 @@
 
     <style>
         /* ===========================
-                                                                                                                                                   WIZARD PROGRESS
-                                                                                                                                                =========================== */
+                                                                                                                                                                       WIZARD PROGRESS
+                                                                                                                                                                    =========================== */
         .wizard-container {
             display: flex;
             justify-content: space-between;
@@ -67,8 +67,8 @@
         }
 
         /* ---------------------------
-                                                                                                                                                        PAGE ANIMATION SLIDE
-                                                                                                                                                    ---------------------------- */
+                                                                                                                                                                            PAGE ANIMATION SLIDE
+                                                                                                                                                                        ---------------------------- */
         .step-page {
             display: none;
             animation-duration: 0.4s;
@@ -111,8 +111,8 @@
         }
 
         /* ===========================
-                                                                                                                                                   CARD STYLE
-                                                                                                                                                =========================== */
+                                                                                                                                                                       CARD STYLE
+                                                                                                                                                                    =========================== */
         .barber-card,
         .service-card {
             border-radius: 12px;
@@ -243,13 +243,33 @@
                 <p><b>Service:</b> <span id="sumService"></span></p>
                 <p><b>Jam:</b> <span id="sumTime"></span></p>
 
-                <h4 class="text-primary">Total: Rp <span id="sumTotal"></span></h4>
+                <hr>
 
-                <form method="POST" action="{{ route('booking.store') }}"id="bookingForm">
+                <p class="d-flex justify-content-between mb-1">
+                    <span>Subtotal Service</span>
+                    <span>Rp <span id="sumSubtotal"></span></span>
+                </p>
+
+                <p class="d-flex justify-content-between mb-1">
+                    <span>Biaya Admin</span>
+                    <span>Rp 5.000</span>
+                </p>
+
+                <hr>
+
+                <h4 class="text-primary d-flex justify-content-between">
+                    <span>Total Bayar</span>
+                    <span>Rp <span id="sumGrandTotal"></span></span>
+                </h4>
+
+                <form method="POST" action="{{ route('booking.store') }}" id="bookingForm">
                     @csrf
                     <input type="hidden" name="date" id="formDate">
                     <input type="hidden" name="barber_id" id="formBarber">
                     <input type="hidden" name="time" id="formTime">
+                    <input type="hidden" name="admin_fee" value="5000">
+                    <input type="hidden" name="total_price" id="formTotal">
+
                     <button class="btn btn-success w-100 mt-3">
                         Konfirmasi Booking
                     </button>
@@ -262,6 +282,8 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script>
+        const ADMIN_FEE = 5000;
+        let grandTotal = 0;
         let selectedDate = null;
         let selectedBarber = null;
         let selectedServices = [];
@@ -309,11 +331,11 @@
                 data-id="${b.id}"
                 data-name="${b.user.name}"
                 data-price="${b.price}">
-                
+
                 <img src="/storage/${b.image ?? 'default-barber.jpg'}"
                      class="w-100 rounded mb-2"
                      style="height:160px;object-fit:cover;">
-                
+
                 <h5 class="text-center">${b.user.name}</h5>
                 <p class="text-center text-muted mb-1">
                     Rp ${Number(b.price).toLocaleString()}
@@ -462,8 +484,18 @@
 
                                 btn.classList.add("active");
 
+                                grandTotal = totalPrice + ADMIN_FEE;
+
                                 document.getElementById("formTime").value = slot;
                                 document.getElementById("sumTime").innerText = slot;
+
+                                document.getElementById("sumSubtotal").innerText =
+                                    totalPrice.toLocaleString();
+
+                                document.getElementById("sumGrandTotal").innerText =
+                                    grandTotal.toLocaleString();
+
+                                document.getElementById("formTotal").value = grandTotal;
 
                                 showStep(5);
                             };
@@ -482,9 +514,15 @@
         ===================== */
         function showStep(n) {
             for (let i = 1; i <= 5; i++) {
-                document.getElementById("step" + i).style.display = i === n ? "block" : "none";
-                document.getElementById("nav" + i).classList.toggle("active", i === n);
-                if (i < n) document.getElementById("nav" + i).classList.add("completed");
+                const stepEl = document.getElementById("step" + i);
+                const navEl = document.getElementById("nav" + i);
+
+                stepEl.style.display = i === n ? "block" : "none";
+
+                navEl.classList.remove("active", "completed");
+
+                if (i === n) navEl.classList.add("active");
+                if (i < n) navEl.classList.add("completed");
             }
         }
 
