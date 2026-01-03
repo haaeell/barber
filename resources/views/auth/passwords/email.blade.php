@@ -1,47 +1,100 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Reset Password') }}</div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Forgot Password</title>
 
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-                    <form method="POST" action="{{ route('password.email') }}">
-                        @csrf
+    <style>
+        body {
+            background: #fff;
+        }
 
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
+        .auth-box {
+            max-width: 420px;
+            margin: auto;
+            padding-top: 60px;
+        }
 
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
+        .btn-black {
+            background: #000;
+            color: #fff;
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
 
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
+        .btn-black:hover {
+            background: #111;
+            color: #fff;
+        }
 
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Send Password Reset Link') }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+        .form-control {
+            height: 48px;
+            border-radius: 6px;
+        }
+
+        .logo {
+            width: 200px;
+            height: 200px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-box text-center">
+
+        <img src="/logo.png" class="logo mb-3" alt="Logo">
+
+        <h4 class="fw-bold">Forgot your password?</h4>
+        <p class="text-muted">
+            Enter your email address and we’ll send you a password reset link.
+        </p>
+
+        @if (session('status'))
+            <div class="alert alert-success text-start">
+                {{ session('status') }}
             </div>
-        </div>
+        @endif
+
+        <form method="POST" action="{{ route('password.email') }}">
+            @csrf
+
+            <div class="mb-3 text-start">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                    placeholder="Email Address" value="{{ old('email') }}" required autofocus>
+
+                @error('email')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <button type="submit" class="btn btn-black">
+                Send Password Reset Link
+            </button>
+        </form>
+
+        <p class="mt-4">
+            Remember your password?
+            <a href="{{ route('login') }}" class="fw-bold text-dark">
+                Back to Login
+            </a>
+        </p>
+
     </div>
-</div>
-@endsection
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

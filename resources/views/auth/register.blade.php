@@ -38,13 +38,8 @@
         }
 
         .logo {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #ddd;
-            margin-bottom: 25px;
-            display: inline-block;
+            width: 200px;
+            height: 200px;
         }
 
         a {
@@ -61,9 +56,7 @@
 
     <div class="register-box text-center">
 
-        <img src="https://simplyhaircut.id/storage/images/navbar/simplywith-outline.svg"
-            onerror="this.outerHTML='<div class=\'logo\'></div>'" class="logo" alt="Logo">
-
+        <img src="/logo.png" class="logo" alt="Logo">
         <h4 class="fw-bold">Sign Up</h4>
         <p class="text-muted">Enter your details and create account</p>
 
