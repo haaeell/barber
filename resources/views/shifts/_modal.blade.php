@@ -47,7 +47,7 @@
 
             {{-- FOOTER --}}
             <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">
                     Batal
                 </button>
                 <button type="submit" class="btn btn-primary fw-semibold">
