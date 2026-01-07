@@ -15,8 +15,6 @@
 
 @section('content')
     <div class="container-fluid">
-
-        {{-- HEADER --}}
         <div class="card mb-3">
             <div class="card-body d-flex justify-content-between align-items-center">
                 <h3 class="fw-bold mb-0">Data Booking & Order</h3>
@@ -27,9 +25,8 @@
             </div>
         </div>
 
-        {{-- FILTER --}}
         <div class="card p-3 shadow-sm mb-4">
-            <form method="GET" class="row">
+            <form method="GET" class="row align-items-end">
                 <div class="col-md-2 mb-2">
                     <label>Status</label>
                     <select name="status" class="form-control">
@@ -64,15 +61,36 @@
                     <input type="date" name="to" class="form-control" value="{{ request('to') }}">
                 </div>
 
-                <div class="col-md-2 mb-2 d-flex align-items-end">
+                {{-- FILTER --}}
+                <div class="col-md-2 mb-2">
                     <button class="btn btn-primary w-100">
                         <i class="fe fe-search"></i> Filter
                     </button>
                 </div>
+
+                {{-- EXPORT --}}
+                <div class="col-md-2 mb-2">
+                    <div class="btn-group w-100">
+                        <button type="button" class="btn btn-primary dropdown-toggle w-100" data-toggle="dropdown">
+                            <i class="fe fe-download"></i> Export Excel
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right w-100">
+                            <a class="dropdown-item export-online" href="#">
+                                📱 Booking Online
+                            </a>
+                            <a class="dropdown-item export-walkin" href="#">
+                                🚶 Walk-in
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item export-all" href="#">
+                                📦 Online + Walk-in
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
 
-        {{-- TABS --}}
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item">
                 <button class="nav-link active" id="tab-online-btn" data-toggle="tab" data-target="#tab-online">
@@ -88,8 +106,6 @@
 
 
         <div class="tab-content">
-
-            {{-- TAB ONLINE --}}
             <div class="tab-pane fade show active" id="tab-online">
                 <div class="d-flex justify-content-end mb-2">
                     <button class="btn btn-success btn-sm export-excel" data-target="table-online">
@@ -116,10 +132,9 @@
                     'tableId' => 'table-walkin',
                 ])
             </div>
-
         </div>
     </div>
-    {{-- ================= MODAL WALK IN ================= --}}
+
     <div class="modal fade" id="modalWalkIn" tabindex="-1">
         <div class="modal-dialog">
             <form method="POST" action="{{ route('admin.bookings.walkin') }}">
@@ -159,7 +174,6 @@
         </div>
     </div>
 
-    {{-- ================= MODAL PAYMENT ================= --}}
     <div class="modal fade" id="paymentModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <form method="POST" action="{{ route('admin.bookings.complete') }}" class="modal-content">
@@ -257,7 +271,6 @@
         </div>
     </div>
 
-    {{-- ================= MODAL CANCEL ================= --}}
     <div class="modal fade" id="cancelModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <form method="POST" action="{{ route('admin.bookings.updateStatus') }}" class="modal-content">
@@ -391,6 +404,25 @@
                 visible: true,
                 api: true
             }).columns.adjust();
+        });
+
+        $('.export-online').on('click', function(e) {
+            e.preventDefault();
+            tables['table-online']?.buttons('.buttons-excel').trigger();
+        });
+
+        $('.export-walkin').on('click', function(e) {
+            e.preventDefault();
+            tables['table-walkin']?.buttons('.buttons-excel').trigger();
+        });
+
+        $('.export-all').on('click', function(e) {
+            e.preventDefault();
+
+            tables['table-online']?.buttons('.buttons-excel').trigger();
+            setTimeout(() => {
+                tables['table-walkin']?.buttons('.buttons-excel').trigger();
+            }, 600);
         });
     </script>
 @endpush

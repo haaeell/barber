@@ -1,16 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mt-4">
+    <div class="">
 
         <h3 class="fw-bold mb-4">Manajemen User</h3>
 
-        {{-- SUCCESS --}}
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        {{-- BUTTON TAMBAH --}}
         <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#modalTambah">
             <i class="fe fe-user-plus"></i> Tambah User
         </button>
@@ -19,7 +17,7 @@
         <div class="card shadow-sm">
             <div class="card-body">
 
-                <table class="table table-bordered table-hover">
+                <table class="table table-bordered table-hover" id="usersTable">
                     <thead class="thead-light">
                         <tr>
                             <th>#</th>
@@ -41,14 +39,11 @@
                                 <td class="text-capitalize">{{ $u->role }}</td>
 
                                 <td class="text-center">
-
-                                    {{-- EDIT --}}
                                     <button class="btn btn-sm btn-warning" data-toggle="modal"
                                         data-target="#modalEdit{{ $u->id }}">
                                         <i class="fe fe-edit"></i>
                                     </button>
 
-                                    {{-- DELETE --}}
                                     <button class="btn btn-sm btn-danger" data-toggle="modal"
                                         data-target="#modalHapus{{ $u->id }}">
                                         <i class="fe fe-trash"></i>
@@ -57,9 +52,6 @@
                                 </td>
                             </tr>
 
-
-
-                            {{-- ====================== MODAL EDIT ====================== --}}
                             <div class="modal fade" id="modalEdit{{ $u->id }}" tabindex="-1">
                                 <div class="modal-dialog">
                                     <form method="POST" action="{{ route('users.update', $u->id) }}">
@@ -133,9 +125,6 @@
                                 </div>
                             </div>
 
-
-
-                            {{-- ====================== MODAL HAPUS ====================== --}}
                             <div class="modal fade" id="modalHapus{{ $u->id }}" tabindex="-1">
                                 <div class="modal-dialog">
                                     <form method="POST" action="{{ route('users.destroy', $u->id) }}">
@@ -172,10 +161,6 @@
             </div>
         </div>
 
-
-
-
-        {{-- ====================== MODAL TAMBAH USER ====================== --}}
         <div class="modal fade" id="modalTambah" tabindex="-1">
             <div class="modal-dialog">
                 <form method="POST" action="{{ route('users.store') }}">
@@ -246,4 +231,26 @@
 
 
     </div>
+
+    @push('scripts')
+        <script>
+            $(document).ready(function() {
+                $('#usersTable').DataTable({
+                    pageLength: 20,
+                    lengthMenu: [10, 20, 50, 100],
+                    ordering: true,
+                    responsive: true,
+                    language: {
+                        search: "Cari:",
+                        lengthMenu: "Tampilkan _MENU_ data",
+                        info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                        paginate: {
+                            previous: "‹",
+                            next: "›"
+                        }
+                    }
+                });
+            });
+        </script>
+    @endpush
 @endsection

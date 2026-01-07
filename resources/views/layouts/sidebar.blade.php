@@ -10,7 +10,7 @@
             <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="/">
                 <img src="https://simplyhaircut.id/storage/images/navbar/simplywith-outline.svg" width="40"
                     alt="">
-                    Simply
+                Simply
                 Haircut
             </a>
         </div>
@@ -156,6 +156,12 @@
             </p>
 
             <ul class="navbar-nav flex-fill w-100 mb-4">
+                <li class="nav-item">
+                    <a class="nav-link {{ Request::is('profile*') ? 'text-primary fw-bold' : '' }}" href="/profile">
+                        <i class="fe fe-user-plus fe-16"></i>
+                        <span class="ml-3 item-text">Profile</span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link {{ Request::is('users*') ? 'text-primary fw-bold' : '' }}" href="/users">
                         <i class="fe fe-user-plus fe-16"></i>

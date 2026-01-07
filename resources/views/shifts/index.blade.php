@@ -169,10 +169,8 @@
 
     </div>
 
-    {{-- MODAL --}}
     @include('shifts._modal')
 
-    {{-- SCRIPT --}}
     <script>
         document.querySelectorAll('.shift-cell').forEach(cell => {
             cell.addEventListener('click', () => {
@@ -185,7 +183,6 @@
 
                 is_day_off.value = isLibur ? '1' : '0';
 
-                // ⬇️ FIX UTAMA DI SINI
                 start_time.value = isLibur ? '' : formatTime(cell.dataset.start);
                 end_time.value = isLibur ? '' : formatTime(cell.dataset.end);
 
