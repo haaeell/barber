@@ -75,11 +75,7 @@
             <div class="container-fluid">
                 <div class="row justify-content-center">
                     <div class="col-12">
-                        <div class="row align-items-center mb-2">
-                            <div class="col">
-                                <h2 class="h5 page-title">@yield('title', 'welcome')</h2>
-                            </div>
-                        </div>
+                        
                         @yield('content')
 
                     </div> <!-- .col-12 -->
