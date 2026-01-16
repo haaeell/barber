@@ -91,9 +91,14 @@
             </form>
         </div>
 
-        <ul class="nav nav-tabs mb-3">
+        <ul class="nav nav-tabs mb-3" id="bookingTabs">
             <li class="nav-item">
-                <button class="nav-link active" id="tab-online-btn" data-toggle="tab" data-target="#tab-online">
+                <button class="nav-link active" id="tab-antrian-btn" data-toggle="tab" data-target="#tab-antrian">
+                    🔥 Antrian Hari Ini
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="tab-online-btn" data-toggle="tab" data-target="#tab-online">
                     📱 Booking Online
                 </button>
             </li>
@@ -103,32 +108,25 @@
                 </button>
             </li>
         </ul>
-
-
+        
         <div class="tab-content">
-            <div class="tab-pane fade show active" id="tab-online">
-                <div class="d-flex justify-content-end mb-2">
-                    <button class="btn btn-success btn-sm export-excel" data-target="table-online">
-                        Export Excel
-                    </button>
-                </div>
-
+            <div class="tab-pane fade show active" id="tab-antrian">
                 @include('admin.bookings._table', [
-                    'rows' => $bookings->where('source', 'online'),
+                    'rows' => $antrianHariIni,
+                    'tableId' => 'table-antrian',
+                ])
+            </div>
+        
+            <div class="tab-pane fade" id="tab-online">
+                @include('admin.bookings._table', [
+                    'rows' => $bookingsOnline,
                     'tableId' => 'table-online',
                 ])
             </div>
-
-            {{-- TAB WALK IN --}}
+        
             <div class="tab-pane fade" id="tab-walkin">
-                <div class="d-flex justify-content-end mb-2">
-                    <button class="btn btn-success btn-sm export-excel" data-target="table-walkin">
-                        Export Excel
-                    </button>
-                </div>
-
                 @include('admin.bookings._table', [
-                    'rows' => $bookings->where('source', 'walk_in'),
+                    'rows' => $bookingsWalkin,
                     'tableId' => 'table-walkin',
                 ])
             </div>

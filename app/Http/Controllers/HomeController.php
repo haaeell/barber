@@ -14,14 +14,20 @@ class HomeController extends Controller
 
         // ======================= CUSTOMER DASHBOARD =======================
         if ($user->role === 'customer') {
+            $today = Carbon::today();
 
             $myBookings = Booking::where('user_id', $user->id)
-                ->orderBy('date', 'asc')
+                ->orderBy('date', 'desc')
                 ->take(5)
                 ->get();
 
+            $todayQueues = Booking::whereDate('date', $today)
+                ->whereNotIn('status', ['completed', 'canceled'])
+                ->orderBy('time', 'asc')
+                ->get();
+
             $upcoming = Booking::where('user_id', $user->id)
-                ->where('date', '>=', Carbon::today())
+                ->where('date', '>=', $today)
                 ->orderBy('date', 'asc')
                 ->first();
 
@@ -29,6 +35,7 @@ class HomeController extends Controller
                 'mode' => 'customer',
                 'myBookings' => $myBookings,
                 'upcoming' => $upcoming,
+                'todayQueues' => $todayQueues,
             ]);
         }
 

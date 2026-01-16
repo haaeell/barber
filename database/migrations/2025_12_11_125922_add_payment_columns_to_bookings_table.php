@@ -22,17 +22,11 @@ return new class extends Migration
                     ->default('unpaid')
                     ->after('payment_method');
             }
-
-            if (!Schema::hasColumn('bookings', 'payment_proof')) {
-                $table->string('payment_proof')->nullable()->after('payment_status');
-            }
         });
     }
 
     public function down(): void
     {
-        Schema::table('bookings', function (Blueprint $table) {
-            $table->dropColumn(['payment_method', 'payment_status', 'payment_proof']);
-        });
+        Schema::table('bookings', function (Blueprint $table) {});
     }
 };

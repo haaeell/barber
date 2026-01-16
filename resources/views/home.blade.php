@@ -7,23 +7,51 @@
         @if ($mode == 'customer')
             <h2 class="fw-bold mb-3">Halo, {{ auth()->user()->name }} 👋</h2>
 
+            <div class="card bg-light shadow-md border-2 border-primary p-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">Antrian Hari Ini</h6>
+                        <h2 class="fw-bold mb-0">{{ $todayQueues->count() }} Orang</h2>
+                    </div>
+                    <i class="fe fe-users style-size-lg"></i>
+                </div>
+
+                @if($todayQueues->count() > 0)
+                    <div class="mt-3">
+                        <p class="small mb-2">Jam Terisi:</p>
+                        <div class="d-flex flex-wrap" style="gap: 5px;">
+                            @foreach($todayQueues as $q)
+                                <span class="badge badge-primary">
+                                    {{ \Carbon\Carbon::parse($q->time)->format('H:i') }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                @else
+                    <div class="mt-3 small text-center">
+                        Belum ada antrian hari ini.
+                    </div>
+                @endif
+            </div>
+
             <h4 class="fw-bold">Riwayat Booking Kamu</h4>
 
             <div class="card shadow-sm p-3">
                 @forelse ($myBookings as $b)
                     <div class="border-bottom py-2">
-                        <b>
-                            <div class="mt-1">
-                                @foreach ($b->services as $svc)
-                                    <span class="badge badge-info">
-                                        {{ $svc->service->name }}
-                                    </span>
-                                @endforeach
-                            </div>
-                        </b>
-                        <br>
-                        {{ $b->date }} / {{ $b->time }} <br>
-                        Status: <span class="badge badge-info">{{ $b->status }}</span>
+                        <div class="mt-1">
+                            @foreach ($b->services as $svc)
+                                <span class="badge badge-info">
+                                    {{ $svc->service->name }}
+                                </span>
+                            @endforeach
+                        </div>
+                        <div class="text-muted small mt-1">
+                            {{ $b->date }} / {{ $b->time }}
+                        </div>
+                        <div>
+                            Status: <span class="badge badge-secondary">{{ $b->status }}</span>
+                        </div>
                     </div>
                 @empty
                     <p class="text-muted">Belum ada booking.</p>
@@ -36,10 +64,6 @@
                 </a>
             </div>
         @endif
-
-
-
-
 
         {{-- ====================== ADMIN DASHBOARD ====================== --}}
         @if ($mode == 'admin')

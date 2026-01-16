@@ -129,7 +129,6 @@ return new class extends Migration
 
             $table->enum('payment_method', ['cash', 'qris', 'transfer'])->default('cash');
             $table->enum('payment_status', ['unpaid', 'paid'])->default('unpaid');
-            $table->string('payment_proof')->nullable();
 
             $table->timestamps();
         });

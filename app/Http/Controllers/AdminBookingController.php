@@ -13,84 +13,40 @@ class AdminBookingController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        $today = now()->format('Y-m-d');
 
-        $status  = $request->status;
-        $barber  = $request->barber;
-        $service = $request->service;
-        $search  = $request->search;
-        $from    = $request->from;
-        $to      = $request->to;
-
-        $today = Carbon::today()->format('Y-m-d');
-
-        $bookings = Booking::with(['barber.user', 'services.service', 'user'])
-
-            // ================= ROLE CHECK =================
+        $query = Booking::with(['barber.user', 'services.service', 'user'])
             ->when($user->role === 'barber', function ($q) use ($user) {
-                if ($user->barber) {
-                    $q->where('barber_id', $user->barber->id);
-                } else {
-                    $q->whereRaw('1=0');
-                }
+                $q->where('barber_id', optional($user->barber)->id ?? 0);
             })
-
-            // ================= FILTER =================
-            ->when($status, fn($q) => $q->where('status', $status))
-
-            ->when(
-                $user->role !== 'barber' && $barber,
-                fn($q) => $q->where('barber_id', $barber)
-            )
-
-            ->when($service, fn($q) => $q->whereHas(
-                'services',
-                fn($s) =>
-                $s->where('service_id', $service)
-            ))
-
-            ->when($search, function ($q) use ($search) {
-                $q->whereHas('user', fn($u) => $u->where('name', 'like', "%$search%"))
-                    ->orWhereHas('barber.user', fn($b) => $b->where('name', 'like', "%$search%"));
-            })
-
-            // ================= FILTER TANGGAL =================
-            ->when(
-                $from && $to,
-                fn($q) => $q->whereBetween('date', [$from, $to])
-            )
-
-            // ================= DEFAULT WALK-IN HARI INI =================
-            ->when(
-                !($from && $to),
-                fn($q) => $q->where(function ($w) use ($today) {
-                    $w->where('source', 'online')
-                        ->orWhere(function ($wi) use ($today) {
-                            $wi->where('source', 'walk_in')
-                                ->whereDate('date', $today);
-                        });
-                })
-            )
-
-            ->orderByRaw("
-                CASE 
-                    WHEN status IN ('completed', 'canceled') THEN 1
-                    ELSE 0
-                END
-            ")
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->barber, fn($q) => $q->where('barber_id', $request->barber))
+            ->when($request->from && $request->to, fn($q) => $q->whereBetween('date', [$request->from, $request->to]))
+            ->orderByRaw("CASE WHEN status IN ('completed', 'canceled') THEN 1 ELSE 0 END")
             ->orderBy('date', 'asc')
+            ->orderBy('time', 'asc');
+
+        $allBookings = $query->get();
+
+        $bookingsOnline = $allBookings->where('source', 'online');
+        $bookingsWalkin = $allBookings->where('source', 'walk_in');
+
+        $antrianHariIni = $query->whereDate('date', $today)
+            ->whereNotIn('status', ['completed', 'canceled'])
+            ->orderByRaw("CASE WHEN source = 'online' THEN 0 ELSE 1 END")
             ->orderBy('time', 'asc')
             ->get();
 
-        // ================= DATA FILTER =================
-        $barbers = $user->role === 'barber'
+        $barbers = ($user->role === 'barber')
             ? Barber::where('id', optional($user->barber)->id)->with('user')->get()
             : Barber::with('user')->get();
 
         $services = Service::all();
 
         return view('admin.bookings.index', compact(
-            'bookings',
-            'status',
+            'bookingsOnline',
+            'bookingsWalkin',
+            'antrianHariIni',
             'barbers',
             'services'
         ));
