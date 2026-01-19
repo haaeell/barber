@@ -8,8 +8,7 @@
         {{-- BRAND --}}
         <div class="w-100 mb-4 d-flex">
             <a class="navbar-brand mx-auto mt-2 flex-fill text-center" href="/">
-                <img src="https://simplyhaircut.id/storage/images/navbar/simplywith-outline.svg" width="40"
-                    alt="">
+                <img src="https://simplyhaircut.id/storage/images/navbar/simplywith-outline.svg" width="40" alt="">
                 Simply
                 Haircut
             </a>
@@ -41,8 +40,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link {{ Request::is('booking*') ? 'text-primary fw-bold' : '' }}"
-                        href="/booking/history">
+                    <a class="nav-link {{ Request::is('booking*') ? 'text-primary fw-bold' : '' }}" href="/booking/history">
                         <i class="fe fe-list fe-16"></i>
                         <span class="ml-3 item-text">Riwayat Booking</span>
                     </a>
@@ -168,6 +166,20 @@
                         <span class="ml-3 item-text">Users</span>
                     </a>
                 </li>
+            </ul>
+
+            <p class="text-muted nav-heading mt-4 mb-1">
+                <span>Monitoring</span>
+            </p>
+
+            <ul class="navbar-nav flex-fill w-100 mb-2">
+                <li class="nav-item">
+                    <a class="nav-link {{ Request::is('reports*') ? 'text-primary fw-bold' : '' }}" href="/reports">
+                        <i class="fe fe-pie-chart fe-16"></i>
+                        <span class="ml-3 item-text">Laporan</span>
+                    </a>
+                </li>
+
             </ul>
         @endif
 

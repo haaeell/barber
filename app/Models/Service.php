@@ -17,12 +17,6 @@ class Service extends Model
         'description'
     ];
 
-    // Booking yang memakai service ini
-    public function bookings()
-    {
-        return $this->hasMany(Booking::class);
-    }
-
     public function bookingServices()
     {
         return $this->hasMany(BookingService::class);

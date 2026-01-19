@@ -9,9 +9,9 @@
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
-        <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#modalTambah">
+        {{-- <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#modalTambah">
             <i class="fe fe-user-plus"></i> Tambah User
-        </button>
+        </button> --}}
 
 
         <div class="card shadow-sm">
@@ -74,8 +74,7 @@
                                                     <div class="input-group-prepend">
                                                         <span class="input-group-text"><i class="fe fe-user"></i></span>
                                                     </div>
-                                                    <input name="name" value="{{ $u->name }}" class="form-control"
-                                                        required>
+                                                    <input name="name" value="{{ $u->name }}" class="form-control" required>
                                                 </div>
 
                                                 <label>Email</label>
@@ -103,15 +102,14 @@
                                                         placeholder="Kosongkan jika tidak diubah">
                                                 </div>
 
-                                                <label>Role</label>
+                                                {{-- <label>Role</label>
                                                 <select name="role" class="form-control">
                                                     @foreach (['admin', 'owner', 'customer', 'barber'] as $role)
-                                                        <option value="{{ $role }}"
-                                                            {{ $u->role == $role ? 'selected' : '' }}>
-                                                            {{ ucfirst($role) }}
-                                                        </option>
+                                                    <option value="{{ $role }}" {{ $u->role == $role ? 'selected' : '' }}>
+                                                        {{ ucfirst($role) }}
+                                                    </option>
                                                     @endforeach
-                                                </select>
+                                                </select> --}}
 
                                             </div>
 
@@ -234,7 +232,7 @@
 
     @push('scripts')
         <script>
-            $(document).ready(function() {
+            $(document).ready(function () {
                 $('#usersTable').DataTable({
                     pageLength: 20,
                     lengthMenu: [10, 20, 50, 100],

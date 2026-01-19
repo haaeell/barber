@@ -21,7 +21,6 @@ class UserController extends Controller
             'email'    => 'nullable|email|unique:users,email',
             'phone'    => 'nullable|unique:users,phone',
             'password' => 'required|min:5',
-            'role'     => 'required|in:customer,barber,admin,owner',
         ]);
 
         User::create([
@@ -41,7 +40,6 @@ class UserController extends Controller
             'name'  => 'required|string|max:255',
             'email' => 'nullable|email|unique:users,email,' . $id,
             'phone' => 'nullable|unique:users,phone,' . $id,
-            'role'  => 'required|in:customer,barber,admin,owner',
         ]);
 
         $user = User::findOrFail($id);
@@ -50,7 +48,7 @@ class UserController extends Controller
             'name'  => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'role'  => $request->role,
+            'role'  => $request->role ?? $user->role,
         ];
 
         if ($request->password) {

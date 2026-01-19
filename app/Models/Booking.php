@@ -30,31 +30,21 @@ class Booking extends Model
         'time' => 'datetime:H:i',
     ];
 
-    // Relasi: Booking milik user
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relasi: Booking milik barber
     public function barber()
     {
         return $this->belongsTo(Barber::class);
     }
 
-    // Relasi: Service yang dipakai
-    public function service()
-    {
-        return $this->belongsTo(Service::class);
-    }
-
-    // Review untuk booking ini
     public function review()
     {
         return $this->hasOne(Review::class);
     }
 
-    // Helper: hitung total dinamis (kalau mau)
     public function getCalculatedTotalAttribute()
     {
         return $this->service_price + $this->barber_price;
