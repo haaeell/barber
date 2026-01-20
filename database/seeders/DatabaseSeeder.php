@@ -13,17 +13,26 @@ use App\Models\Booking;
 use App\Models\BarberShift;
 use App\Models\BookingService;
 use App\Models\Review;
+use App\Models\Shift;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
     public function run()
     {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+        BarberShift::truncate();
+        Shift::truncate();
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         $this->createOwner();
         $this->createAdmins();
         $this->createCustomers();
         $this->createBarbers();
         $this->createServices();
+        $this->createShifts();
         $this->createBarberWeeklyShifts();
     }
 
@@ -197,28 +206,43 @@ class DatabaseSeeder extends Seeder
     }
 
 
+    private function createShifts()
+    {
+        Shift::insert([
+            [
+                'name' => 'Shift 1',
+                'start_time' => '09:00:00',
+                'end_time' => '17:00:00',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Shift 2',
+                'start_time' => '14:00:00',
+                'end_time' => '22:00:00',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /*  BARBER WEEKLY SHIFTS (FIXED)                                              */
+    /* -------------------------------------------------------------------------- */
     private function createBarberWeeklyShifts()
     {
         $barbers = Barber::pluck('id')->values();
-        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        $shifts  = Shift::pluck('id')->values();
 
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
         $totalBarbers = $barbers->count();
 
-        if ($totalBarbers < 2) {
-            return;
-        }
+        if ($totalBarbers < 2) return;
 
-        BarberShift::truncate();
-
-        $startTime = '09:00:00';
-        $endTime   = '18:00:00';
-
-        /**
-         * Generate 4 minggu
-         */
         for ($week = 1; $week <= 4; $week++) {
 
             foreach ($days as $dayIndex => $day) {
+
                 $offIndex = ($dayIndex + ($week - 1)) % $totalBarbers;
                 $offBarberId = $barbers[$offIndex];
 
@@ -226,12 +250,17 @@ class DatabaseSeeder extends Seeder
 
                     $isWorking = $barberId != $offBarberId;
 
+                    $shift = $isWorking
+                        ? Shift::inRandomOrder()->first()
+                        : null;
+
                     BarberShift::create([
                         'barber_id'   => $barberId,
+                        'shift_id'    => $shift?->id,
                         'week_number' => $week,
                         'day_of_week' => $day,
-                        'start_time'  => $isWorking ? $startTime : null,
-                        'end_time'    => $isWorking ? $endTime : null,
+                        'start_time'  => $shift?->start_time,
+                        'end_time'    => $shift?->end_time,
                         'is_day_off'  => !$isWorking,
                     ]);
                 }

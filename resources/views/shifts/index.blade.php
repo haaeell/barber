@@ -67,6 +67,91 @@
     </style>
 
     <div class="container-fluid">
+        {{-- ================= MASTER SHIFT ================= --}}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Master Shift</h5>
+                <button class="btn btn-primary btn-sm" onclick="openCreateShift()">
+                    + Tambah Shift
+                </button>
+            </div>
+
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nama</th>
+                            <th>Jam</th>
+                            <th width="120">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($shifts as $shift)
+                            <tr>
+                                <td>{{ $shift->name }}</td>
+                                <td>{{ $shift->start_time }} - {{ $shift->end_time }}</td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm" onclick='openEditShift(@json($shift))'>
+                                        Edit
+                                    </button>
+
+                                    <form method="POST" action="{{ route('master.shifts.destroy', $shift->id) }}"
+                                        class="d-inline" onsubmit="return confirm('Hapus shift ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-danger btn-sm">
+                                            Hapus
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+        <div class="modal fade" id="modalMasterShift" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <form method="POST" id="formMasterShift" class="modal-content">
+                    @csrf
+                    <input type="hidden" name="_method" id="methodMaster">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="titleMaster">Master Shift</h5>
+                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>Nama Shift</label>
+                            <input type="text" name="name" id="ms_name" class="form-control" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                <label>Mulai</label>
+                                <input type="time" name="start_time" id="ms_start" class="form-control" required>
+                            </div>
+                            <div class="col">
+                                <label>Selesai</label>
+                                <input type="time" name="end_time" id="ms_end" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">
+                            Batal
+                        </button>
+                        <button class="btn btn-primary">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
 
         {{-- HEADER --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -141,21 +226,21 @@
                                                 ->firstWhere('day_of_week', $day);
                                         @endphp
 
-                                        <td class="shift-cell" data-barber="{{ $barber->id }}"
-                                            data-week="{{ $week }}" data-day="{{ $day }}"
-                                            data-start="{{ $shift ? \Carbon\Carbon::parse($shift->start_time)->format('H:i') : '' }}"
-                                            data-end="{{ $shift ? \Carbon\Carbon::parse($shift->end_time)->format('H:i') : '' }}"
-                                            data-libur="{{ $shift?->is_day_off ?? 0 }}" style="cursor:pointer">
+                                        <td class="shift-cell" data-barber="{{ $barber->id }}" data-week="{{ $week }}"
+                                            data-day="{{ $day }}" data-libur="{{ $shift?->is_day_off ?? 0 }}"
+                                            data-shift_id="{{ $shift?->shift_id ?? null }}" style=" cursor:pointer">
 
                                             @if (!$shift || $shift->is_day_off)
                                                 <span class="badge-off">OFF</span>
                                             @else
                                                 <span class="badge rounded-pill badge-shift">
-                                                    {{ \Carbon\Carbon::parse($shift->start_time)->format('H:i') }}
-                                                    –
-                                                    {{ \Carbon\Carbon::parse($shift->end_time)->format('H:i') }}
+                                                    {{ $shift->shift->name }}
+                                                    <small class="d-block text-muted">
+                                                        {{ $shift->shift->start_time }} - {{ $shift->shift->end_time }}
+                                                    </small>
                                                 </span>
                                             @endif
+
                                         </td>
                                     @endforeach
                                 </tr>
@@ -172,45 +257,86 @@
     @include('shifts._modal')
 
     <script>
-        document.querySelectorAll('.shift-cell').forEach(cell => {
-            cell.addEventListener('click', () => {
+        document.addEventListener('DOMContentLoaded', function () {
 
-                const isLibur = cell.dataset.libur === '1';
+            // ===== SHIFT SCHEDULE ELEMENTS =====
+            const barber_id = document.getElementById('barber_id');
+            const day_of_week = document.getElementById('day_of_week');
+            const week_number = document.getElementById('week_number');
+            const is_day_off = document.getElementById('is_day_off');
+            const shift_id = document.getElementById('shift_id');
+            const modalEl = document.getElementById('modalShift');
 
-                barber_id.value = cell.dataset.barber;
-                day_of_week.value = cell.dataset.day;
-                week_number.value = cell.dataset.week;
+            // ===== CLICK CELL =====
+            document.querySelectorAll('.shift-cell').forEach(cell => {
+                cell.addEventListener('click', () => {
 
-                is_day_off.value = isLibur ? '1' : '0';
+                    const isLibur = cell.dataset.libur === '1';
 
-                start_time.value = isLibur ? '' : formatTime(cell.dataset.start);
-                end_time.value = isLibur ? '' : formatTime(cell.dataset.end);
+                    barber_id.value = cell.dataset.barber;
+                    day_of_week.value = cell.dataset.day;
+                    week_number.value = cell.dataset.week;
 
-                toggleTime(isLibur);
+                    is_day_off.value = isLibur ? '1' : '0';
 
-                new bootstrap.Modal(
-                    document.getElementById('modalShift')
-                ).show();
+                    shift_id.value = cell.dataset.shift_id ?? '';
+                    toggleShift(isLibur);
+
+                    new bootstrap.Modal(modalEl).show();
+                });
             });
-        });
 
-        function formatTime(t) {
-            return t ? t.substring(0, 5) : '';
-        }
-
-        function toggleTime(isLibur) {
-            start_time.disabled = isLibur;
-            end_time.disabled = isLibur;
-        }
-
-        is_day_off.addEventListener('change', function() {
-            const libur = this.value === '1';
-            toggleTime(libur);
-
-            if (libur) {
-                start_time.value = '';
-                end_time.value = '';
+            function toggleShift(isLibur) {
+                shift_id.disabled = isLibur;
+                if (isLibur) shift_id.value = '';
             }
+
+            is_day_off.addEventListener('change', function () {
+                toggleShift(this.value === '1');
+            });
+
+            // ================= MASTER SHIFT =================
+
+            const modalMaster = new bootstrap.Modal(
+                document.getElementById('modalMasterShift')
+            );
+
+            const formMaster = document.getElementById('formMasterShift');
+            const methodMaster = document.getElementById('methodMaster');
+            const titleMaster = document.getElementById('titleMaster');
+
+            const ms_name = document.getElementById('ms_name');
+            const ms_start = document.getElementById('ms_start');
+            const ms_end = document.getElementById('ms_end');
+
+            // ===== CREATE =====
+            window.openCreateShift = function () {
+                formMaster.action = "{{ route('master.shifts.store') }}";
+                methodMaster.value = '';
+
+                ms_name.value = '';
+                ms_start.value = '';
+                ms_end.value = '';
+
+                titleMaster.innerText = 'Tambah Master Shift';
+                modalMaster.show();
+            }
+
+            // ===== EDIT =====
+            window.openEditShift = function (shift) {
+                formMaster.action = `/master/shifts/${shift.id}`;
+                methodMaster.value = 'PUT';
+
+                ms_name.value = shift.name;
+                ms_start.value = shift.start_time;
+                ms_end.value = shift.end_time;
+
+                titleMaster.innerText = 'Edit Master Shift';
+                modalMaster.show();
+            }
+
         });
     </script>
+
+
 @endsection

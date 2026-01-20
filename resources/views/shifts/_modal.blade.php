@@ -18,26 +18,26 @@
 
             {{-- BODY --}}
             <div class="modal-body">
-
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Status</label>
-                    <select name="is_day_off" id="is_day_off" class="form-select">
+                    <select name="is_day_off" id="is_day_off" class="form-control">
                         <option value="0">Masuk</option>
                         <option value="1">Libur</option>
                     </select>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Jam Mulai</label>
-                        <input type="time" name="start_time" id="start_time" class="form-control">
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label fw-semibold">Jam Selesai</label>
-                        <input type="time" name="end_time" id="end_time" class="form-control">
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Shift</label>
+                    <select name="shift_id" id="shift_id" class="form-control">
+                        <option value="">-- Pilih Shift --</option>
+                        @foreach ($shifts as $shift)
+                            <option value="{{ $shift->id }}">
+                                {{ $shift->name }} ({{ $shift->start_time }} - {{ $shift->end_time }})
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
+
 
                 <div class="alert alert-info small mb-0">
                     💡 Pilih <b>Libur</b> jika barber tidak masuk di hari tersebut.

@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Barber;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class BarberController extends Controller
 {
     public function index()
     {
+        if (Auth::user()->role != 'admin') {
+            abort(403);
+        }
         $barbers = Barber::with('user')->latest()->get();
         return view('barbers.index', compact('barbers'));
     }

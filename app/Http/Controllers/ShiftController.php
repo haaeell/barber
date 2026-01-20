@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Barber;
 use App\Models\BarberShift;
+use App\Models\Shift;
 use Illuminate\Http\Request;
 
 class ShiftController extends Controller
@@ -12,38 +13,38 @@ class ShiftController extends Controller
     {
         $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
-        $barbers = Barber::with([
-            'user',
-            'shifts' => function ($q) {
-                $q->orderBy('week_number');
-            }
-        ])->get();
+        $barbers = Barber::with(['user', 'shifts.shift'])->get();
+        $shifts = Shift::all();
 
-        $weeks = [1, 2, 3, 4];
-
-        return view('shifts.index', compact('barbers', 'days', 'weeks'));
+        return view('shifts.index', compact('barbers', 'days', 'shifts'));
     }
+
 
     public function store(Request $request)
     {
         $request->validate([
-            'barber_id' => 'required|exists:barbers,id',
+            'barber_id' => 'required',
+            'week_number' => 'required',
             'day_of_week' => 'required',
-            'start_time' => 'nullable',
-            'end_time' => 'nullable',
-            'is_day_off' => 'required|boolean',
+            'shift_id' => 'nullable|exists:shifts,id',
+            'is_day_off' => 'required|boolean'
         ]);
+
+        $shift = $request->shift_id
+            ? Shift::find($request->shift_id)
+            : null;
 
         BarberShift::updateOrCreate(
             [
-                'barber_id'   => $request->barber_id,
-                'day_of_week' => $request->day_of_week,
+                'barber_id' => $request->barber_id,
                 'week_number' => $request->week_number,
+                'day_of_week' => $request->day_of_week,
             ],
             [
-                'start_time'  => $request->is_day_off ? null : $request->start_time,
-                'end_time'    => $request->is_day_off ? null : $request->end_time,
-                'is_day_off'  => $request->is_day_off,
+                'shift_id' => $request->is_day_off ? null : $shift?->id,
+                'start_time' => $request->is_day_off ? null : $shift?->start_time,
+                'end_time' => $request->is_day_off ? null : $shift?->end_time,
+                'is_day_off' => $request->is_day_off,
             ]
         );
 
@@ -105,5 +106,44 @@ class ShiftController extends Controller
         }
 
         return back()->with('success', 'Jadwal rolling 4 minggu berhasil dibuat.');
+    }
+
+    /* ================= MASTER SHIFT ================= */
+
+    public function storeMaster(Request $request)
+    {
+        $data = $request->validate([
+            'name'       => 'required|string',
+            'start_time' => 'required',
+            'end_time'   => 'required',
+        ]);
+
+        Shift::create($data);
+
+        return back()->with('success', 'Master shift ditambahkan');
+    }
+
+    public function updateMaster(Request $request, Shift $shift)
+    {
+        $data = $request->validate([
+            'name'       => 'required|string',
+            'start_time' => 'required',
+            'end_time'   => 'required',
+        ]);
+
+        $shift->update($data);
+
+        return back()->with('success', 'Master shift diperbarui');
+    }
+
+    public function destroyMaster(Shift $shift)
+    {
+        if ($shift->barberShifts()->exists()) {
+            return back()->with('error', 'Shift sedang dipakai jadwal barber');
+        }
+
+        $shift->delete();
+
+        return back()->with('success', 'Master shift dihapus');
     }
 }

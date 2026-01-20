@@ -15,7 +15,8 @@ class BarberShift extends Model
         'start_time',
         'end_time',
         'is_day_off',
-        'week_number'
+        'week_number',
+        'shift_id',
     ];
 
     protected $casts = [
@@ -27,5 +28,10 @@ class BarberShift extends Model
     public function barber()
     {
         return $this->belongsTo(Barber::class);
+    }
+
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
     }
 }

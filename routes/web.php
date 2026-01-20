@@ -66,4 +66,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::prefix('master/shifts')->group(function () {
+        Route::post('/', [ShiftController::class, 'storeMaster'])->name('master.shifts.store');
+        Route::put('/{shift}', [ShiftController::class, 'updateMaster'])->name('master.shifts.update');
+        Route::delete('/{shift}', [ShiftController::class, 'destroyMaster'])->name('master.shifts.destroy');
+    });
 });
