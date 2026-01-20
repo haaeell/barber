@@ -187,10 +187,20 @@ class BookingController extends Controller
     }
 
 
-    public function history()
+    public function history(Request $request)
     {
-        $bookings = Booking::with(['barber.user', 'service'])
+        $search = $request->query('search');
+
+        $bookings = Booking::with(['barber.user', 'services.service'])
             ->where('user_id', auth()->id())
+            ->when($search, function ($q) use ($search) {
+                $q->whereHas('services.service', function ($qs) use ($search) {
+                    $qs->where('name', 'like', "%{$search}%");
+                })
+                    ->orWhereHas('barber.user', function ($qb) use ($search) {
+                        $qb->where('name', 'like', "%{$search}%");
+                    });
+            })
             ->orderByRaw("
                 CASE status
                     WHEN 'pending' THEN 1
@@ -202,10 +212,12 @@ class BookingController extends Controller
             ")
             ->orderBy('date', 'desc')
             ->orderBy('time', 'desc')
-            ->get();
+            ->paginate(3)  // jumlah card per halaman
+            ->withQueryString(); // biar search kebawa saat pindah page
 
-        return view('booking.history', compact('bookings'));
+        return view('booking.history', compact('bookings', 'search'));
     }
+
 
     public function cancel(Booking $booking)
     {

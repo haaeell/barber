@@ -75,7 +75,7 @@
                     <a class="nav-link {{ Request::is('/admin/bookings') ? 'text-primary fw-bold' : '' }}"
                         href="/admin/bookings">
                         <i class="fe fe-calendar fe-16"></i>
-                        <span class="ml-3 item-text">Jadwal Booking</span>
+                        <span class="ml-3 item-text">Manajemen Layanan</span>
                     </a>
                 </li>
 
@@ -115,7 +115,7 @@
                 <li class="nav-item">
                     <a class="nav-link {{ Request::is('barbers*') ? 'text-primary fw-bold' : '' }}" href="/barbers">
                         <i class="fe fe-users fe-16"></i>
-                        <span class="ml-3 item-text">Barbers</span>
+                        <span class="ml-3 item-text">Kapster</span>
                     </a>
                 </li>
 
@@ -144,7 +144,7 @@
                     <a class="nav-link {{ Request::is('admin/bookings*') ? 'text-primary fw-bold' : '' }}"
                         href="/admin/bookings">
                         <i class="fe fe-calendar fe-16"></i>
-                        <span class="ml-3 item-text">Semua Booking</span>
+                        <span class="ml-3 item-text">Manajemen Pemesanan</span>
                     </a>
                 </li>
             </ul>

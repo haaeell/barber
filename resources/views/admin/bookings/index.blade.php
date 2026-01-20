@@ -97,18 +97,20 @@
                     🔥 Antrian Hari Ini
                 </button>
             </li>
-            <li class="nav-item">
-                <button class="nav-link" id="tab-online-btn" data-toggle="tab" data-target="#tab-online">
-                    📱 Booking Online
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="tab-walkin-btn" data-toggle="tab" data-target="#tab-walkin">
-                    🚶 Order Manual
-                </button>
-            </li>
+            @if (Auth::user()->role == 'admin')
+                <li class="nav-item">
+                    <button class="nav-link" id="tab-online-btn" data-toggle="tab" data-target="#tab-online">
+                        📱 Booking Online
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="tab-walkin-btn" data-toggle="tab" data-target="#tab-walkin">
+                        🚶 Order Manual
+                    </button>
+                </li>
+            @endif
         </ul>
-        
+
         <div class="tab-content">
             <div class="tab-pane fade show active" id="tab-antrian">
                 @include('admin.bookings._table', [
@@ -116,14 +118,14 @@
                     'tableId' => 'table-antrian',
                 ])
             </div>
-        
+
             <div class="tab-pane fade" id="tab-online">
                 @include('admin.bookings._table', [
                     'rows' => $bookingsOnline,
                     'tableId' => 'table-online',
                 ])
             </div>
-        
+
             <div class="tab-pane fade" id="tab-walkin">
                 @include('admin.bookings._table', [
                     'rows' => $bookingsWalkin,

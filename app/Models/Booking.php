@@ -35,6 +35,11 @@ class Booking extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
     public function barber()
     {
         return $this->belongsTo(Barber::class);

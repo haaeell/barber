@@ -3,14 +3,14 @@
 @section('content')
     <div class="container mt-4">
 
-        <h3 class="fw-bold mb-4">Manajemen Barber</h3>
+        <h3 class="fw-bold mb-4">Manajemen Kapster</h3>
 
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
 
         <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#modalTambah">
-            <i class="fe fe-plus"></i> Tambah Barber
+            <i class="fe fe-plus"></i> Tambah Kapster
         </button>
 
         <div class="card shadow-sm">
@@ -78,20 +78,16 @@
 
                                             <div class="modal-body">
                                                 <label>Nama</label>
-                                                <input name="name" value="{{ $b->user->name }}"
-                                                    class="form-control mb-2">
+                                                <input name="name" value="{{ $b->user->name }}" class="form-control mb-2">
 
                                                 <label>Email</label>
-                                                <input name="email" value="{{ $b->user->email }}"
-                                                    class="form-control mb-2">
+                                                <input name="email" value="{{ $b->user->email }}" class="form-control mb-2">
 
                                                 <label>Nickname</label>
-                                                <input name="nickname" value="{{ $b->nickname }}"
-                                                    class="form-control mb-2">
+                                                <input name="nickname" value="{{ $b->nickname }}" class="form-control mb-2">
 
                                                 <label>Speciality</label>
-                                                <input name="speciality" value="{{ $b->speciality }}"
-                                                    class="form-control mb-2">
+                                                <input name="speciality" value="{{ $b->speciality }}" class="form-control mb-2">
 
                                                 <label>Harga</label>
                                                 <input name="price" type="number" value="{{ $b->price }}"

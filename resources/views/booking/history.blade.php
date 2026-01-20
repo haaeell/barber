@@ -74,6 +74,17 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
+        <form method="GET" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="search" value="{{ request('search') }}" class="form-control"
+                    placeholder="Cari service atau barber...">
+                <button class="btn btn-primary">
+                    Cari
+                </button>
+            </div>
+        </form>
+
+
         @forelse ($bookings as $booking)
             <div class="booking-card shadow-sm">
 
@@ -91,8 +102,7 @@
 
 
                 {{-- FOTO BARBER --}}
-                <img src="{{ asset('storage/' . ($booking->barber->image ?? 'default-barber.jpg')) }}"
-                    class="booking-image">
+                <img src="{{ asset('storage/' . ($booking->barber->image ?? 'default-barber.jpg')) }}" class="booking-image">
 
                 {{-- INFO --}}
                 <div style="flex:1">
@@ -129,16 +139,6 @@
                         {{ ucfirst($booking->status) }}
                     </span>
 
-                    {{-- REVIEW --}}
-                    {{-- @if ($booking->status === 'completed' && !$booking->review)
-                        <div class="mt-3">
-                            <a href="{{ route('booking.review', $booking->id) }}"
-                                class="btn btn-sm btn-primary action-btn">
-                                Beri Review
-                            </a>
-                        </div>
-                    @endif --}}
-
                 </div>
             </div>
         @empty
@@ -146,13 +146,15 @@
                 Belum ada booking.
             </div>
         @endforelse
-
+        <div class="d-flex justify-content-center mt-4">
+            {{ $bookings->links('pagination::bootstrap-5') }}
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('.btn-cancel-booking').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     const form = this.closest('form');
 
                     Swal.fire({

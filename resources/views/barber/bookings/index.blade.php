@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container mt-4">
-        <h3 class="fw-bold mb-4">Jadwal Booking Saya</h3>
+        <h3 class="fw-bold mb-4">Manajemen Layanan</h3>
 
         @foreach ($bookings as $b)
             <div class="card shadow-sm mb-3 p-3">

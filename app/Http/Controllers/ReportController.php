@@ -29,19 +29,19 @@ class ReportController extends Controller
             'qris' => $bookings->where('payment_method', 'qris')->sum('total_price'),
         ];
 
-        $incomePerBarber = Barber::with(['user', 'bookings'])
+        $incomePerBarber = Barber::with('user')
+            ->withSum(['bookings as income' => function ($q) use ($from, $to) {
+                $q->where('payment_status', 'paid')
+                    ->whereBetween('date', [$from, $to]);
+            }], 'total_price')
             ->get()
-            ->map(function ($barber) use ($from, $to) {
-                $income = $barber->bookings
-                    ->where('payment_status', 'paid')
-                    ->whereBetween('date', [$from, $to])
-                    ->sum('total_price');
-
+            ->map(function ($barber) {
                 return [
                     'name' => $barber->user->name,
-                    'income' => $income
+                    'income' => $barber->income ?? 0
                 ];
             });
+
 
         $incomePerService = BookingService::with('service')
             ->whereHas('booking', function ($q) use ($from, $to) {
