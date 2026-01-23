@@ -138,9 +138,10 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-secondary" id="btnCancelMaster">
                             Batal
                         </button>
+
                         <button type="submit" class="btn btn-primary">
                             Simpan
                         </button>
@@ -374,6 +375,15 @@
                     document.getElementById('deleteShiftModal')
                 ).show();
             }
+
+            const btnCancelMaster = document.getElementById('btnCancelMaster');
+
+            btnCancelMaster.addEventListener('click', function () {
+                modalMaster.hide();
+
+                formMaster.reset();
+                methodMaster.value = '';
+            });
 
         });
     </script>
