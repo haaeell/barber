@@ -121,7 +121,7 @@
                                         @method('DELETE')
 
                                         <div class="modal-content">
-                                            <div class="modal-header bg-danger text-white">
+                                            <div class="modal-header">
                                                 <h5>Hapus Barber</h5>
                                             </div>
                                             <div class="modal-body">

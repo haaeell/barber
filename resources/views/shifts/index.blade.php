@@ -95,14 +95,11 @@
                                         Edit
                                     </button>
 
-                                    <form method="POST" action="{{ route('master.shifts.destroy', $shift->id) }}"
-                                        class="d-inline" onsubmit="return confirm('Hapus shift ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-danger btn-sm">
-                                            Hapus
-                                        </button>
-                                    </form>
+                                    <button class="btn btn-danger btn-sm"
+                                        onclick="openDeleteShiftModal('{{ route('master.shifts.destroy', $shift->id) }}')">
+                                        Hapus
+                                    </button>
+
                                 </td>
                             </tr>
                         @endforeach
@@ -141,16 +138,50 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             Batal
                         </button>
-                        <button class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary">
                             Simpan
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+        <div class="modal fade" id="deleteShiftModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <form method="POST" id="deleteShiftForm" class="modal-content">
+                    @csrf
+                    @method('DELETE')
+
+                    <div class="modal-header ">
+                        <h5 class="modal-title">Konfirmasi Hapus Shift</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body text-center">
+                        <p class="fw-bold mb-1">
+                            Yakin ingin menghapus master shift ini?
+                        </p>
+                        <small class="text-muted">
+                            Shift yang dihapus tidak bisa digunakan di jadwal.
+                        </small>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Batal
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            Ya, Hapus
                         </button>
                     </div>
                 </form>
             </div>
         </div>
+
 
 
         {{-- HEADER --}}
@@ -333,6 +364,15 @@
 
                 titleMaster.innerText = 'Edit Master Shift';
                 modalMaster.show();
+            }
+
+            window.openDeleteShiftModal = function (action) {
+                const form = document.getElementById('deleteShiftForm');
+                form.action = action;
+
+                new bootstrap.Modal(
+                    document.getElementById('deleteShiftModal')
+                ).show();
             }
 
         });

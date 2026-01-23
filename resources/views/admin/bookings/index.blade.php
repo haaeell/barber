@@ -97,6 +97,7 @@
                     🔥 Antrian Hari Ini
                 </button>
             </li>
+            @if (Auth::user()->role == 'admin')
                 <li class="nav-item">
                     <button class="nav-link" id="tab-online-btn" data-toggle="tab" data-target="#tab-online">
                         📱 Booking Online
@@ -107,6 +108,7 @@
                         🚶 Walkin
                     </button>
                 </li>
+            @endif
         </ul>
 
         <div class="tab-content">
