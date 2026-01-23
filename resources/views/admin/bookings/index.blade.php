@@ -20,7 +20,7 @@
                 <h3 class="fw-bold mb-0">Data Booking & Order</h3>
 
                 <button class="btn btn-success" data-toggle="modal" data-target="#modalWalkIn">
-                    <i class="fe fe-plus"></i> Order Manual
+                    <i class="fe fe-plus"></i> Walkin
                 </button>
             </div>
         </div>
@@ -97,7 +97,6 @@
                     🔥 Antrian Hari Ini
                 </button>
             </li>
-            @if (Auth::user()->role == 'admin')
                 <li class="nav-item">
                     <button class="nav-link" id="tab-online-btn" data-toggle="tab" data-target="#tab-online">
                         📱 Booking Online
@@ -105,10 +104,9 @@
                 </li>
                 <li class="nav-item">
                     <button class="nav-link" id="tab-walkin-btn" data-toggle="tab" data-target="#tab-walkin">
-                        🚶 Order Manual
+                        🚶 Walkin
                     </button>
                 </li>
-            @endif
         </ul>
 
         <div class="tab-content">
