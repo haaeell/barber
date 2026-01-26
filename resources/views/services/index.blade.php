@@ -81,8 +81,7 @@
                                                 <label>Nama Layanan</label>
                                                 <div class="input-group mb-3">
                                                     <span class="input-group-text"><i class="fe fe-scissors"></i></span>
-                                                    <input name="name" value="{{ $s->name }}" class="form-control"
-                                                        required>
+                                                    <input name="name" value="{{ $s->name }}" class="form-control" required>
                                                 </div>
 
                                                 <label>Harga</label>
@@ -100,14 +99,14 @@
                                                 </div>
 
                                                 <label>Deskripsi</label>
-                                                <textarea name="description" class="form-control">{{ $s->description }}</textarea>
+                                                <textarea name="description"
+                                                    class="form-control">{{ $s->description }}</textarea>
 
                                                 <label class="mt-3">Foto Service</label>
                                                 <input type="file" name="image" class="form-control">
 
                                                 @if ($s->image)
-                                                    <img src="{{ asset('storage/' . $s->image) }}" class="mt-2 rounded"
-                                                        width="80">
+                                                    <img src="{{ asset('storage/' . $s->image) }}" class="mt-2 rounded" width="80">
                                                 @endif
 
                                             </div>
@@ -126,13 +125,13 @@
 
                             {{-- ===================== MODAL HAPUS ===================== --}}
                             <div class="modal fade" id="modalHapus{{ $s->id }}" tabindex="-1">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog  modal-dialog-centered">
                                     <form method="POST" action="{{ route('services.destroy', $s->id) }}">
                                         @csrf
                                         @method('DELETE')
 
                                         <div class="modal-content">
-                                            <div class="modal-header bg-danger text-white">
+                                            <div class="modal-header">
                                                 <h5 class="modal-title">Hapus Service</h5>
                                                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                                             </div>
@@ -142,6 +141,7 @@
                                             </div>
 
                                             <div class="modal-footer">
+                                                <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
                                                 <button class="btn btn-danger">Hapus</button>
                                             </div>
 

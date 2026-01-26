@@ -116,7 +116,7 @@
 
                     <div class="modal-header">
                         <h5 class="modal-title" id="titleMaster">Master Shift</h5>
-                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                        <button class="btn-close" data-dismiss="modal"></button>
                     </div>
 
                     <div class="modal-body">
@@ -159,7 +159,7 @@
 
                     <div class="modal-header ">
                         <h5 class="modal-title">Konfirmasi Hapus Shift</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close btn-close-white" data-dismiss="modal"></button>
                     </div>
 
                     <div class="modal-body text-center">
@@ -172,13 +172,14 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
                             Batal
                         </button>
                         <button type="submit" class="btn btn-danger">
                             Ya, Hapus
                         </button>
                     </div>
+
                 </form>
             </div>
         </div>

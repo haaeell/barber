@@ -13,7 +13,7 @@
                 <h5 class="modal-title fw-bold">
                     <i class="fe fe-clock me-1"></i> Atur Shift Barber
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-dismiss="modal"></button>
             </div>
 
             {{-- BODY --}}

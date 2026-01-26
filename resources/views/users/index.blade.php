@@ -124,7 +124,7 @@
                             </div>
 
                             <div class="modal fade" id="modalHapus{{ $u->id }}" tabindex="-1">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog modal-dialog-centered">
                                     <form method="POST" action="{{ route('users.destroy', $u->id) }}">
                                         @csrf
                                         @method('DELETE')
@@ -143,6 +143,7 @@
                                             </div>
 
                                             <div class="modal-footer">
+                                                <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
                                                 <button class="btn btn-danger">Hapus</button>
                                             </div>
 

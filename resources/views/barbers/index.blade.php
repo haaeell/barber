@@ -115,7 +115,7 @@
 
                             {{-- ================= HAPUS ================= --}}
                             <div class="modal fade" id="modalHapus{{ $b->id }}">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog modal-dialog-centered">
                                     <form method="POST" action="{{ route('barbers.destroy', $b->id) }}">
                                         @csrf
                                         @method('DELETE')
@@ -128,6 +128,7 @@
                                                 Hapus barber <b>{{ $b->user->name }}</b>?
                                             </div>
                                             <div class="modal-footer">
+                                                <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
                                                 <button class="btn btn-danger">Hapus</button>
                                             </div>
                                         </div>
