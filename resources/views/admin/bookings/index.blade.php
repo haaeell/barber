@@ -188,7 +188,6 @@
                         <option value="">-- Pilih --</option>
                         <option value="cash">Cash</option>
                         <option value="qris">QRIS</option>
-                        <option value="transfer">Transfer</option>
                     </select>
                 </div>
 
