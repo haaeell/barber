@@ -96,7 +96,7 @@
                     @foreach ($bookings as $b)
                         <tr>
                             <td>{{ $b->date }} {{ $b->time }}</td>
-                            <td>{{ $b->user->name }}</td>
+                            <td>{{ $b->user->name ?? $b->customer_name }}</td>
                             <td>{{ $b->barber->user->name }}</td>
                             <td>
                                 @foreach ($b->services as $svc)
